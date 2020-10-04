@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -20,7 +21,7 @@ public class Board : MonoBehaviour
 
     private Grid grid = null;
     private Piece[,] pieceGrid = null;
-    private GamePhase currentGamePhase = GamePhase.Actor1Spawn;
+    private GamePhase currentGamePhase = GamePhase.SpawnA;
 
     private void Awake()
     {
@@ -37,7 +38,7 @@ public class Board : MonoBehaviour
     {
         BoardPosition pos = move.TargetPosition;
 
-        if (currentGamePhase == GamePhase.Actor1Spawn)
+        if (currentGamePhase == GamePhase.SpawnA)
         {
             if (pos.x >= 0 && pos.x < Width && pos.y >= 0 && pos.y <= 2)
             {
@@ -46,27 +47,37 @@ public class Board : MonoBehaviour
 
                 // TODO: Add a button to finalize spawn instead of forcing it's done
                 if (actorAPieces.IsValidSpawn())
-                    currentGamePhase = GamePhase.Actor2Spawn;
+                {
+                    currentGamePhase = GamePhase.SpawnB;
+                    actorB.PerformSpawn();
+                }
                 else
+                {
                     actorA.PerformSpawn();
+                }
             }
             else
             {
                 actorA.PerformSpawn();
             }
         }
-        else if (currentGamePhase == GamePhase.Actor2Spawn)
+        else if (currentGamePhase == GamePhase.SpawnB)
         {
-            if (pos.x >= 0 && pos.x < Width && pos.y >= 6 && pos.y <= 8)
+            if (pos.x >= 0 && pos.x < Width && pos.y >= 5 && pos.y <= 7)
             {
                 PlacePiece(move);
                 actorBPieces.ActivatePiece(move.Piece);
 
                 // TODO: Add a button to finalize spawn instead of forcing it's done
                 if (actorBPieces.IsValidSpawn())
-                    currentGamePhase = GamePhase.Actor1Move;
+                {
+                    currentGamePhase = GamePhase.MoveA;
+                    actorA.PerformMove();
+                }
                 else
+                {
                     actorB.PerformSpawn();
+                }
             }
             else
             {
@@ -135,6 +146,54 @@ public class Board : MonoBehaviour
 
         return allPossibleMoves;
     }
+
+    #region Temp
+    public void RandomizeSpawn()
+    {
+        int minHeight = 0;
+        int maxHeight = 0;
+        PieceContainer pieces = null;
+
+        if (currentGamePhase == GamePhase.SpawnA)
+        {
+            minHeight = 0;
+            maxHeight = 2;
+            pieces = actorAPieces;
+        }
+        else if (currentGamePhase == GamePhase.SpawnB)
+        {
+            minHeight = 5;
+            maxHeight = 7;
+            pieces = actorBPieces;
+        }
+        else
+        {
+            Debug.LogError("Tried to randomize spawn in main game phase");
+            return;
+        }
+
+        // Get all pieces
+        List<Piece> allPieces = new List<Piece>();
+        List<BoardPosition> spawnPos = new List<BoardPosition>();
+        foreach (Piece piece in pieces.InactivePieces)
+            allPieces.Add(piece);
+        foreach (Piece piece in pieces.ActivePieces)
+            allPieces.Add(piece);
+
+        // List all valid spawn positions
+        for (int i = 0; i < Width; i++)
+            for (int j = minHeight; j <= maxHeight; j++)
+                spawnPos.Add(new BoardPosition(i, j));
+
+        // Shuffle
+        System.Random random = new System.Random();
+        spawnPos = spawnPos.OrderBy(x => random.Next()).ToList();
+
+        // Spawn pieces
+        for (int i = 0; i < allPieces.Count; i++)
+            SpawnPiece(new MoveInfo(allPieces[i], spawnPos[i]));
+    }
+    #endregion
 
     #region Helpers
     public Vector3 GetCellToWorld(BoardPosition pos)

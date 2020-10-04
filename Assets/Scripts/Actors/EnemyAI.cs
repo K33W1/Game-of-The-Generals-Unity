@@ -14,7 +14,7 @@ public class EnemyAI : Actor
 
     public override void PerformSpawn()
     {
-        // TODO: Spawn
+        // TODO: Enemy spawning
     }
 
     public override void PerformMove()
