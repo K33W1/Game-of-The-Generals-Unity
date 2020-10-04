@@ -43,9 +43,13 @@ public class PlayerInput : Actor
     private void OnClickUp()
     {
         DragAndDropListener heldObject = dragAndDropController.HeldObject;
-        Piece piece = heldObject?.GetComponent<Piece>();
 
-        if (heldObject == null || !piece.Properties.IsPlayerPiece)
+        if (heldObject == null)
+            return;
+        
+        Piece piece = heldObject.GetComponent<Piece>();
+
+        if (!piece.Properties.IsPlayerPiece)
             return;
 
         heldObject.ReturnToOriginalPosition();
@@ -57,9 +61,15 @@ public class PlayerInput : Actor
         MoveInfo move = new MoveInfo(piece, targetPosition);
         
         if (isCurrentSpawn)
-            isCurrentSpawn = !board.TrySpawnPiece(move);
+        {
+            isCurrentSpawn = false;
+            board.SpawnPiece(move);
+        }
         else if (isCurrentTurn)
-            isCurrentTurn = !board.TryMove(move);
+        {
+            isCurrentTurn = false;
+            board.TryMove(move);
+        }
     }
 
     private void OnDisable()

@@ -33,34 +33,46 @@ public class Board : MonoBehaviour
         actorA.PerformSpawn();
     }
 
-    public bool TrySpawnPiece(MoveInfo move)
+    public void SpawnPiece(MoveInfo move)
     {
-        if (!IsPositionInsideGrid(move.TargetPosition))
-            return false;
+        BoardPosition pos = move.TargetPosition;
 
         if (currentGamePhase == GamePhase.Actor1Spawn)
         {
-            if (move.TargetPosition.y >= 0 && move.TargetPosition.y <= 2)
+            if (pos.x >= 0 && pos.x < Width && pos.y >= 0 && pos.y <= 2)
             {
                 PlacePiece(move);
+                actorAPieces.ActivatePiece(move.Piece);
+
+                // TODO: Add a button to finalize spawn instead of forcing it's done
+                if (actorAPieces.IsValidSpawn())
+                    currentGamePhase = GamePhase.Actor2Spawn;
+                else
+                    actorA.PerformSpawn();
+            }
+            else
+            {
+                actorA.PerformSpawn();
             }
         }
         else if (currentGamePhase == GamePhase.Actor2Spawn)
         {
+            if (pos.x >= 0 && pos.x < Width && pos.y >= 6 && pos.y <= 8)
+            {
+                PlacePiece(move);
+                actorBPieces.ActivatePiece(move.Piece);
 
+                // TODO: Add a button to finalize spawn instead of forcing it's done
+                if (actorBPieces.IsValidSpawn())
+                    currentGamePhase = GamePhase.Actor1Move;
+                else
+                    actorB.PerformSpawn();
+            }
+            else
+            {
+                actorB.PerformSpawn();
+            }
         }
-
-        return true;
-    }
-
-    public void SpawnPiece(MoveInfo move)
-    {
-        if (!IsPositionInsideGrid(move.TargetPosition))
-            return;
-
-        // TODO: Spawn piece
-
-        return;
     }
 
     public void PlacePiece(MoveInfo move)

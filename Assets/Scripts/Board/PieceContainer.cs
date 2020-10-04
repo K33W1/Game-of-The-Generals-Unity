@@ -17,6 +17,12 @@ public class PieceContainer : MonoBehaviour
         return ActivePieces.Find(piece => piece.Properties.Rank == rank);
     }
 
+    public void ActivatePiece(Piece piece)
+    {
+        if (InactivePieces.Remove(piece))
+            ActivePieces.Add(piece);
+    }
+
     public void KillPiece(Piece piece)
     {
         if (ActivePieces.Remove(piece))
@@ -28,6 +34,14 @@ public class PieceContainer : MonoBehaviour
         {
             Debug.LogError("Piece can't be removed!");
         }
+    }
+
+    public bool IsValidSpawn()
+    {
+        if (InactivePieces.Count == 0)
+            return true;
+
+        return false;
     }
 
     public void ToggleVisibility()
