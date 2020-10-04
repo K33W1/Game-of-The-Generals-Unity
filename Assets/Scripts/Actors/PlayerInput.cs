@@ -4,10 +4,6 @@ using UnityEngine.InputSystem;
 [DisallowMultipleComponent]
 public class PlayerInput : Actor
 {
-    [Header("References")]
-    [SerializeField] private Board board = null;
-    [SerializeField] private PieceContainer pieces = null;
-
     public PieceContainer PieceContainer => pieces;
 
     private InputMaster input = null;
@@ -38,6 +34,12 @@ public class PlayerInput : Actor
     public override void PerformMove()
     {
         isCurrentTurn = true;
+    }
+
+    public void ConfirmSpawns()
+    {
+        isCurrentSpawn = false;
+        board.ConfirmSpawn();
     }
 
     private void OnClickUp()

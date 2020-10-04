@@ -6,9 +6,6 @@ using Random = UnityEngine.Random;
 [DisallowMultipleComponent]
 public class EnemyAI : Actor
 {
-    [Header("References")]
-    [SerializeField] private Board board = null;
-
     [Header("Settings")]
     [SerializeField] private float thinkTime = 1.0f;
 
