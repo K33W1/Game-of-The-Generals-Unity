@@ -9,21 +9,46 @@ public class EnemyAI : Actor
     [Header("Settings")]
     [SerializeField] private float thinkTime = 1.0f;
 
+    private bool isThinking = false;
+
     public override void PerformSpawn()
     {
-        // TODO: Enemy spawning
+        if (isThinking)
+            return;
+
+        StartCoroutine(PerformSpawnLoop());
     }
 
     public override void PerformMove()
     {
-        StartCoroutine(PerformTurnCoroutine());
+        if (isThinking)
+            return;
+
+        StartCoroutine(PerformMoveLoop());
     }
 
-    private IEnumerator PerformTurnCoroutine()
+    private IEnumerator PerformSpawnLoop()
     {
+        isThinking = true;
+
+        // TODO: Remove wait timer
+        yield return new WaitForSeconds(thinkTime);
+        // TODO: Smart spawning
+        RandomizeSpawns();
+        board.ConfirmSpawn();
+
+        isThinking = false;
+    }
+
+    private IEnumerator PerformMoveLoop()
+    {
+        isThinking = true;
+
         // TODO: Remove wait timer
         yield return new WaitForSeconds(thinkTime);
         board.TryMove(GetMove());
+
+        isThinking = false;
     }
 
     private MoveInfo GetMove()

@@ -21,10 +21,10 @@ public class DragAndDropController : MonoBehaviour
 
         if (collider == null)
             return;
-        if (!collider.TryGetComponent<DragAndDropListener>(out var piece))
+        if (!collider.TryGetComponent<DragAndDropListener>(out var listener))
             return;
 
-        HeldObject = piece;
+        HeldObject = listener;
         HeldObject.OnClickDown(GetMousePosition());
     }
 

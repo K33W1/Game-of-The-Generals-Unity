@@ -4228,10 +4228,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   board: {fileID: 1140391677}
-  pieces: {fileID: 0}
+  pieces: {fileID: 2099683873}
   minSpawnHeight: 5
   maxSpawnHeight: 7
-  thinkTime: 1
+  thinkTime: 0.1
 --- !u!114 &2099683873
 MonoBehaviour:
   m_ObjectHideFlags: 0

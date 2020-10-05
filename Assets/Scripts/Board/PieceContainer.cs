@@ -28,7 +28,6 @@ public class PieceContainer : MonoBehaviour
         if (ActivePieces.Remove(piece))
         {
             InactivePieces.Add(piece);
-            piece.Disable();
         }
         else
         {
@@ -38,10 +37,10 @@ public class PieceContainer : MonoBehaviour
 
     public bool IsValidSpawn()
     {
-        if (InactivePieces.Count == 0)
-            return true;
+        if (InactivePieces.Count > 0)
+            return false;
 
-        return false;
+        return true;
     }
 
     public void ToggleVisibility()

@@ -44,7 +44,7 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Debug.Log("Invalid spawn state! " + "Game State: " + currentGamePhase.ToString());
+                Debug.LogError("Invalid spawn state!");
                 actorA.PerformSpawn();
             }
         }
@@ -57,9 +57,13 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Debug.Log("Invalid spawn state! " + "Game State: " + currentGamePhase.ToString());
+                Debug.LogError("Invalid spawn state!");
                 actorB.PerformSpawn();
             }
+        }
+        else
+        {
+            Debug.LogError("Tried to confirm spawn on wrong game phase!");
         }
     }
 

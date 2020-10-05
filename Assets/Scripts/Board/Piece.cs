@@ -12,7 +12,6 @@ public class Piece : MonoBehaviour
 
     public PieceProps Properties => pieceProps;
     public BoardPosition BoardPosition { get; set; } = new BoardPosition(-1, -1);
-    public bool IsAlive { get; private set; } = true;
 
     private SpriteRenderer spriteRenderer = null;
     private Sprite visibleSprite = null;
@@ -26,16 +25,6 @@ public class Piece : MonoBehaviour
     private void Start()
     {
         visibleSprite = spriteRenderer.sprite;
-    }
-
-    public void Enable()
-    {
-        IsAlive = true;
-    }
-
-    public void Disable()
-    {
-        IsAlive = false;
     }
 
     public void ToggleVisibility()

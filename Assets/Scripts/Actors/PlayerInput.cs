@@ -16,8 +16,8 @@ public class PlayerInput : Actor
     {
         input = new InputMaster();
         input.Player.ClickDown.performed += _ => dragAndDropController.OnClickDown();
-        input.Player.ClickUp.performed += _ => dragAndDropController.OnClickUp();
         input.Player.ClickUp.performed += _ => OnClickUp();
+        input.Player.ClickUp.performed += _ => dragAndDropController.OnClickUp();
         dragAndDropController = GetComponent<DragAndDropController>();
     }
 
