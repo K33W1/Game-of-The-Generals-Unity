@@ -10,6 +10,7 @@ public class Board : MonoBehaviour
     [SerializeField] private Actor actorB = null;
     [SerializeField] private PieceContainer actorAPieces = null;
     [SerializeField] private PieceContainer actorBPieces = null;
+    [SerializeField] private GamePhaseObject currentGamePhase = null;
 
     [Header("Settings")]
     [SerializeField] private int width = 9;
@@ -20,7 +21,6 @@ public class Board : MonoBehaviour
 
     private Grid grid = null;
     private Piece[,] pieceGrid = null;
-    private GamePhase currentGamePhase = GamePhase.SpawnA;
 
     private void Awake()
     {
@@ -37,7 +37,7 @@ public class Board : MonoBehaviour
     {
         BoardPosition pos = move.TargetPosition;
 
-        if (currentGamePhase == GamePhase.SpawnA)
+        if (currentGamePhase.Value == GamePhase.SpawnA)
         {
             if (pos.x >= 0 && pos.x < Width && pos.y >= 0 && pos.y <= 2)
             {
@@ -47,7 +47,7 @@ public class Board : MonoBehaviour
 
             actorA.PerformSpawn();
         }
-        else if (currentGamePhase == GamePhase.SpawnB)
+        else if (currentGamePhase.Value == GamePhase.SpawnB)
         {
             if (pos.x >= 0 && pos.x < Width && pos.y >= 5 && pos.y <= 7)
             {
@@ -65,11 +65,11 @@ public class Board : MonoBehaviour
 
     public void ConfirmSpawn()
     {
-        if (currentGamePhase == GamePhase.SpawnA)
+        if (currentGamePhase.Value == GamePhase.SpawnA)
         {
             if (actorAPieces.IsValidSpawn())
             {
-                currentGamePhase = GamePhase.SpawnB;
+                currentGamePhase.Value = GamePhase.SpawnB;
                 actorB.PerformSpawn();
             }
             else
@@ -78,11 +78,11 @@ public class Board : MonoBehaviour
                 actorA.PerformSpawn();
             }
         }
-        else if (currentGamePhase == GamePhase.SpawnB)
+        else if (currentGamePhase.Value == GamePhase.SpawnB)
         {
             if (actorBPieces.IsValidSpawn())
             {
-                currentGamePhase = GamePhase.MoveA;
+                currentGamePhase.Value = GamePhase.MoveA;
                 actorA.PerformMove();
             }
             else
@@ -109,21 +109,21 @@ public class Board : MonoBehaviour
         if (TryMovePiece(move))
         {
             // Flip side
-            if (currentGamePhase == GamePhase.MoveA)
+            if (currentGamePhase.Value == GamePhase.MoveA)
             {
-                currentGamePhase = GamePhase.MoveB;
+                currentGamePhase.Value = GamePhase.MoveB;
                 actorB.PerformMove();
             }
             else
             {
-                currentGamePhase = GamePhase.MoveA;
+                currentGamePhase.Value = GamePhase.MoveA;
                 actorA.PerformMove();
             }
         }
         else
         {
             // Try again
-            if (currentGamePhase == GamePhase.MoveA)
+            if (currentGamePhase.Value == GamePhase.MoveA)
             {
                 actorA.PerformMove();
             }
