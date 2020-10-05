@@ -16,6 +16,8 @@
 
     public bool IsPositionAdjacent(BoardPosition otherPos)
     {
-        return (x * otherPos.x + y * otherPos.y) == 1;
+        int xDiff = x - otherPos.x;
+        int yDiff = y - otherPos.y;
+        return (xDiff * xDiff + yDiff * yDiff) == 1;
     }
 }

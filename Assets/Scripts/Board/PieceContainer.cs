@@ -20,7 +20,10 @@ public class PieceContainer : MonoBehaviour
     public void ActivatePiece(Piece piece)
     {
         if (InactivePieces.Remove(piece))
+        {
+            piece.gameObject.SetActive(true);
             ActivePieces.Add(piece);
+        }
     }
 
     public void KillPiece(Piece piece)
@@ -28,6 +31,7 @@ public class PieceContainer : MonoBehaviour
         if (ActivePieces.Remove(piece))
         {
             InactivePieces.Add(piece);
+            piece.gameObject.SetActive(false);
         }
         else
         {

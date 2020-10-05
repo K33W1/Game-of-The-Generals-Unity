@@ -46,7 +46,7 @@ public class EnemyAI : Actor
 
         // TODO: Remove wait timer
         yield return new WaitForSeconds(thinkTime);
-        board.TryMove(GetMove());
+        board.MovePiece(GetMove());
 
         isThinking = false;
     }

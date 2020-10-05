@@ -33,6 +33,36 @@ public class Board : MonoBehaviour
         actorA.PerformSpawn();
     }
 
+    public void SpawnPiece(MoveInfo move)
+    {
+        BoardPosition pos = move.TargetPosition;
+
+        if (currentGamePhase == GamePhase.SpawnA)
+        {
+            if (pos.x >= 0 && pos.x < Width && pos.y >= 0 && pos.y <= 2)
+            {
+                PlacePiece(move);
+                actorAPieces.ActivatePiece(move.Piece);
+            }
+
+            actorA.PerformSpawn();
+        }
+        else if (currentGamePhase == GamePhase.SpawnB)
+        {
+            if (pos.x >= 0 && pos.x < Width && pos.y >= 5 && pos.y <= 7)
+            {
+                PlacePiece(move);
+                actorBPieces.ActivatePiece(move.Piece);
+            }
+
+            actorB.PerformSpawn();
+        }
+        else
+        {
+            Debug.LogError("Tried to spawn a piece in wrong game phase!");
+        }
+    }
+
     public void ConfirmSpawn()
     {
         if (currentGamePhase == GamePhase.SpawnA)
@@ -67,70 +97,99 @@ public class Board : MonoBehaviour
         }
     }
 
-    public void SpawnPiece(MoveInfo move)
+    public void PlacePiece(MoveInfo move)
     {
-        BoardPosition pos = move.TargetPosition;
+        UpdateGridArray(move);
+        UpdatePieceWorldPosition(move);
+        UpdatePiecePosition(move);
+    }
 
-        if (currentGamePhase == GamePhase.SpawnA)
+    public void MovePiece(MoveInfo move)
+    {
+        if (TryMovePiece(move))
         {
-            if (pos.x >= 0 && pos.x < Width && pos.y >= 0 && pos.y <= 2)
+            // Flip side
+            if (currentGamePhase == GamePhase.MoveA)
             {
-                PlacePiece(move);
-                actorAPieces.ActivatePiece(move.Piece);
+                currentGamePhase = GamePhase.MoveB;
+                actorB.PerformMove();
             }
-
-            actorA.PerformSpawn();
-        }
-        else if (currentGamePhase == GamePhase.SpawnB)
-        {
-            if (pos.x >= 0 && pos.x < Width && pos.y >= 5 && pos.y <= 7)
+            else
             {
-                PlacePiece(move);
-                actorBPieces.ActivatePiece(move.Piece);
+                currentGamePhase = GamePhase.MoveA;
+                actorA.PerformMove();
             }
-
-            actorB.PerformSpawn();
         }
         else
         {
-            Debug.LogError("Tried to spawn a piece in wrong game phase!");
+            // Try again
+            if (currentGamePhase == GamePhase.MoveA)
+            {
+                actorA.PerformMove();
+            }
+            else
+            {
+                actorB.PerformMove();
+            }
         }
     }
 
-    public void PlacePiece(MoveInfo move)
+    private bool TryMovePiece(MoveInfo move)
     {
-        UpdatePieceWorldPosition(move);
-        UpdateGridArray(move);
-    }
-
-    public bool TryMove(MoveInfo move)
-    {
-        Piece thisPiece = move.Piece;
-        BoardPosition nextPos = move.TargetPosition;
-
         if (!IsValidMove(move))
             return false;
 
+        Piece thisPiece = move.Piece;
+        BoardPosition nextPos = move.TargetPosition;
         Piece otherPiece = pieceGrid[nextPos.x, nextPos.y];
-        
+
+        // If other piece exists on target position
         if (otherPiece != null)
         {
             if (otherPiece.Properties.IsPlayerPiece == thisPiece.Properties.IsPlayerPiece)
                 return false;
 
-            MovePieceOnPiece(thisPiece, otherPiece);
-        }
+            AttackPiece(thisPiece, otherPiece);
 
-        PlacePiece(move);
+            // Check if piece is still alive
+            if (thisPiece.gameObject.activeSelf)
+                PlacePiece(move);
+        }
+        else
+        {
+            PlacePiece(move);
+        }
 
         return true;
     }
 
-    private void MovePieceOnPiece(Piece pieceA, Piece pieceB)
+    private void AttackPiece(Piece pieceA, Piece pieceB)
     {
         Piece winningPiece = GameRules.GetWinningPiece(pieceA, pieceB);
         // TODO: Battle animation
-        // TODO: Remove losing piece
+
+        // Remove losing piece
+        if (winningPiece != null)
+        {
+            Piece losingPiece = winningPiece == pieceA ? pieceB : pieceA;
+            KillPiece(losingPiece);
+        }
+        else
+        {
+            KillPiece(pieceA);
+            KillPiece(pieceB);
+        }
+    }
+
+    private void KillPiece(Piece piece)
+    {
+        BoardPosition pos = piece.BoardPosition;
+        pieceGrid[pos.x, pos.y] = null;
+
+        if (piece.Properties.IsPlayerPiece)
+            actorAPieces.KillPiece(piece);
+        else
+            actorBPieces.KillPiece(piece);
     }
 
     private void UpdatePieceWorldPosition(MoveInfo move)
@@ -141,14 +200,25 @@ public class Board : MonoBehaviour
         move.Piece.transform.position = GetCellToWorld(move.TargetPosition);
     }
 
-    private void UpdateGridArray(MoveInfo move)
+    private void UpdatePiecePosition(MoveInfo move)
     {
         move.Piece.BoardPosition = move.TargetPosition;
     }
 
+    private void UpdateGridArray(MoveInfo move)
+    {
+        BoardPosition lastPos = move.Piece.BoardPosition;
+        BoardPosition nextPos = move.TargetPosition;
+
+        if (IsPositionInsideGrid(lastPos))
+            pieceGrid[lastPos.x, lastPos.y] = null;
+        pieceGrid[nextPos.x, nextPos.y] = move.Piece;
+    }
+
+    #region Helpers
     public List<MoveInfo> GetAllValidMoves(Actor actor)
     {
-        List <MoveInfo> allPossibleMoves = new List<MoveInfo>();
+        List<MoveInfo> allPossibleMoves = new List<MoveInfo>();
         PieceContainer pieces = actor == actorA ? actorAPieces : actorBPieces;
 
         foreach (Piece piece in pieces.ActivePieces)
@@ -158,7 +228,6 @@ public class Board : MonoBehaviour
         return allPossibleMoves;
     }
 
-    #region Helpers
     public Vector3 GetCellToWorld(BoardPosition pos)
     {
         return grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));

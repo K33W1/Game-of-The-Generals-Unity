@@ -49,12 +49,12 @@ public class PlayerInput : Actor
         if (heldObject == null)
             return;
         
+        heldObject.ReturnToOriginalPosition();
+
         Piece piece = heldObject.GetComponent<Piece>();
 
         if (!piece.Properties.IsPlayerPiece)
             return;
-
-        heldObject.ReturnToOriginalPosition();
 
         Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mouseScreenPos);
@@ -70,7 +70,7 @@ public class PlayerInput : Actor
         else if (isCurrentTurn)
         {
             isCurrentTurn = false;
-            board.TryMove(move);
+            board.MovePiece(move);
         }
     }
 
