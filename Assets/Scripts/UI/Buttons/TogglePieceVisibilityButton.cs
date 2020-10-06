@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class ToggleVisiblePiecesUI : MonoBehaviour
+public class TogglePieceVisibilityButton : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private PieceContainer enemyPieces = null;

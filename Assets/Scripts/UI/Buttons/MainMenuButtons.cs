@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class MainMenuUI : MonoBehaviour
+public class MainMenuButtons : MonoBehaviour
 {
     public void GoToMainMenu() => SceneManager.LoadScene(0);
 

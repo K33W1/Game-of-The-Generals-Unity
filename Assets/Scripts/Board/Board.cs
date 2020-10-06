@@ -10,7 +10,11 @@ public class Board : MonoBehaviour
     [SerializeField] private Actor actorB = null;
     [SerializeField] private PieceContainer actorAPieces = null;
     [SerializeField] private PieceContainer actorBPieces = null;
+
+    [Header("Scriptable Objects")]
     [SerializeField] private GamePhaseObject currentGamePhase = null;
+    [SerializeField] private GameOutputObject currentGameOutput = null;
+    [SerializeField] private StringValue winnerName = null;
 
     [Header("Settings")]
     [SerializeField] private int width = 9;
@@ -108,6 +112,14 @@ public class Board : MonoBehaviour
     {
         if (TryMovePiece(move))
         {
+            // Check if someone won
+            GameOutput gameOutput = CheckGameEnd();
+            if (gameOutput != GameOutput.None)
+            {
+                EndGame(gameOutput);
+                return;
+            }
+
             // Flip side
             if (currentGamePhase.Value == GamePhase.MoveA)
             {
@@ -132,6 +144,41 @@ public class Board : MonoBehaviour
                 actorB.PerformMove();
             }
         }
+    }
+
+    private void EndGame(GameOutput gameOutput)
+    {
+        if (gameOutput == GameOutput.A)
+            winnerName.Value = "Player";
+        else
+            winnerName.Value = "AI";
+
+        currentGameOutput.Value = GameOutput.None;
+        currentGamePhase.Value = GamePhase.End;
+    }
+
+    private GameOutput CheckGameEnd()
+    {
+        Piece flagA = actorAPieces.GetPiece(PieceRank.Flag);
+        Piece flagB = actorBPieces.GetPiece(PieceRank.Flag);
+
+        if (flagA == null)
+        {
+            return GameOutput.B;
+        }
+        else if (flagB == null)
+        {
+            return GameOutput.A;
+        }
+        else
+        {
+            if (currentGamePhase.Value == GamePhase.MoveB && flagA.BoardPosition.y == Height - 1)
+                return GameOutput.A;
+            else if (currentGamePhase.Value == GamePhase.MoveA && flagB.BoardPosition.y == 0)
+                return GameOutput.B;
+        }
+
+        return GameOutput.None;
     }
 
     private bool TryMovePiece(MoveInfo move)
