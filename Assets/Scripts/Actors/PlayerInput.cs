@@ -53,7 +53,7 @@ public class PlayerInput : Actor
 
         Piece piece = heldObject.GetComponent<Piece>();
 
-        if (!piece.Properties.IsPlayerPiece)
+        if (piece.Properties.Side != Side.A)
             return;
 
         Vector2 mouseScreenPos = Mouse.current.position.ReadValue();

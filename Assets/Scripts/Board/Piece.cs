@@ -1,7 +1,5 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
-[Serializable]
 public class Piece : MonoBehaviour
 {
     [Header("References")]
@@ -11,6 +9,7 @@ public class Piece : MonoBehaviour
     [SerializeField] private PieceProps pieceProps = new PieceProps();
 
     public PieceProps Properties => pieceProps;
+
     public BoardPosition BoardPosition { get; set; } = new BoardPosition(-1, -1);
 
     private SpriteRenderer spriteRenderer = null;

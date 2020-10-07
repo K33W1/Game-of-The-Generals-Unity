@@ -1,6 +1,6 @@
 ﻿public enum Side
 {
+    Invalid,
     A,
-    B,
-    None
+    B
 }

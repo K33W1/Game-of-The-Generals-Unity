@@ -6,14 +6,14 @@ public struct PieceProps
 {
     [Header("Settings")]
     [SerializeField] private PieceRank rank;
-    [SerializeField] private bool isPlayerPiece;
+    [SerializeField] private Side side;
 
-    public PieceProps(PieceRank rank, bool isPlayerPiece)
+    public PieceProps(PieceRank rank, Side side)
     {
         this.rank = rank;
-        this.isPlayerPiece = isPlayerPiece;
+        this.side = side;
     }
 
     public PieceRank Rank => rank;
-    public bool IsPlayerPiece => isPlayerPiece;
+    public Side Side => side;
 }

@@ -146,18 +146,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    private void EndGame(GameOutput gameOutput)
-    {
-        if (gameOutput == GameOutput.A)
-            winnerName.Value = "Player";
-        else
-            winnerName.Value = "AI";
-
-        currentGameOutput.Value = GameOutput.None;
-        currentGamePhase.Value = GamePhase.End;
-    }
-
-    private GameOutput CheckGameEnd()
+    public GameOutput CheckGameEnd()
     {
         Piece flagA = actorAPieces.GetPiece(PieceRank.Flag);
         Piece flagB = actorBPieces.GetPiece(PieceRank.Flag);
@@ -181,6 +170,17 @@ public class Board : MonoBehaviour
         return GameOutput.None;
     }
 
+    private void EndGame(GameOutput gameOutput)
+    {
+        if (gameOutput == GameOutput.A)
+            winnerName.Value = "Player";
+        else
+            winnerName.Value = "AI";
+
+        currentGameOutput.Value = GameOutput.None;
+        currentGamePhase.Value = GamePhase.End;
+    }
+
     private bool TryMovePiece(MoveInfo move)
     {
         if (!IsValidMove(move))
@@ -193,9 +193,6 @@ public class Board : MonoBehaviour
         // If other piece exists on target position
         if (otherPiece != null)
         {
-            if (otherPiece.Properties.IsPlayerPiece == thisPiece.Properties.IsPlayerPiece)
-                return false;
-
             AttackPiece(thisPiece, otherPiece);
 
             // Check if piece is still alive
@@ -233,7 +230,7 @@ public class Board : MonoBehaviour
         BoardPosition pos = piece.BoardPosition;
         pieceGrid[pos.x, pos.y] = null;
 
-        if (piece.Properties.IsPlayerPiece)
+        if (piece.Properties.Side == Side.A)
             actorAPieces.KillPiece(piece);
         else
             actorBPieces.KillPiece(piece);
@@ -325,7 +322,7 @@ public class Board : MonoBehaviour
         if (otherPiece == null)
             return true;
 
-        if (otherPiece.Properties.IsPlayerPiece != piece.Properties.IsPlayerPiece)
+        if (otherPiece.Properties.Side != piece.Properties.Side)
             return true;
 
         return false;
