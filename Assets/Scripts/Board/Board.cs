@@ -1,70 +1,31 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-[DisallowMultipleComponent]
-[RequireComponent(typeof(Grid))]
-public class Board : MonoBehaviour
+public class Board
 {
-    [Header("References")]
-    [SerializeField] private Actor actorA = null;
-    [SerializeField] private Actor actorB = null;
-
     public const int Width = 9;
     public const int Height = 8;
 
-    public GamePhaseObservable CurrentGamePhase { get; } = new GamePhaseObservable();
+    public readonly Piece[,] PieceGrid = null;
+    public readonly PieceContainer PiecesA = null;
+    public readonly PieceContainer PiecesB = null;
+
+    public GamePhase CurrentGamePhase { get; private set; } = GamePhase.Spawn;
     public GameOutput CurrentGameOutput { get; private set; } = GameOutput.None;
     public Side CurrentSide { get; private set; } = Side.Invalid;
 
-    private Grid grid = null;
-    private Piece[,] pieceGrid = null;
-    private PieceContainer piecesA = null;
-    private PieceContainer piecesB = null;
-
-    private void Awake()
+    public Board(Piece[,] pieceGrid, PieceContainer piecesA, PieceContainer piecesB, GamePhase currentGamePhase, GameOutput currentGameOutput, Side currentSide)
     {
-        grid = GetComponent<Grid>();
-        pieceGrid = new Piece[Width, Height];
-        piecesA = new PieceContainer();
-        piecesB = new PieceContainer();
+        PieceGrid = pieceGrid;
+        PiecesA = piecesA;
+        PiecesB = piecesB;
+        CurrentGamePhase = currentGamePhase;
+        CurrentGameOutput = currentGameOutput;
+        CurrentSide = currentSide;
     }
 
-    private void Start()
+    public bool SpawnPiece(MoveInfo move)
     {
-        // Starting values
-        CurrentGamePhase.Value = GamePhase.Spawn;
-        CurrentGameOutput = GameOutput.None;
-        CurrentSide = Side.A;
-
-        // Get the piece gameobjects
-        foreach (Piece piece in FindObjectsOfType<Piece>())
-        {
-            if (piece.Properties.Side == Side.A)
-            {
-                piecesA.InactivePieces.Add(piece);
-            }
-            else if (piece.Properties.Side == Side.B)
-            {
-                piecesB.InactivePieces.Add(piece);
-            }
-            else
-            {
-                Debug.LogError("Piece has no side!");
-                return;
-            }
-        }
-
-        actorA.PerformSpawn();
-    }
-
-    public void SpawnPiece(MoveInfo move)
-    {
-        if (CurrentGamePhase.Value != GamePhase.Spawn)
-        {
-            Debug.LogError("Tried to spawn piece on wrong game phase!");
-            return;
-        }
-
         BoardPosition pos = move.TargetPosition;
 
         if (CurrentSide == Side.A)
@@ -72,68 +33,60 @@ public class Board : MonoBehaviour
             if (pos.x >= 0 && pos.x < Width && pos.y >= 0 && pos.y <= 2)
             {
                 PlacePiece(move);
-                piecesA.ActivatePiece(move.Piece);
+                PiecesA.ActivatePiece(move.Piece);
+                return true;
             }
 
-            actorA.PerformSpawn();
         }
         else
         {
             if (pos.x >= 0 && pos.x < Width && pos.y >= 5 && pos.y <= 7)
             {
                 PlacePiece(move);
-                piecesB.ActivatePiece(move.Piece);
+                PiecesB.ActivatePiece(move.Piece);
+                return true;
             }
-
-            actorB.PerformSpawn();
         }
+
+        return false;
     }
 
-    public void ConfirmSpawn()
+    public bool ConfirmSpawn()
     {
-        if (CurrentGamePhase.Value != GamePhase.Spawn)
-        {
-            Debug.LogError("Tried to confirm spawn on wrong game phase!");
-            return;
-        }
-
         if (CurrentSide == Side.A)
         {
-            if (piecesA.IsValidSpawn())
+            if (PiecesA.IsValidSpawn())
             {
                 CurrentSide = Side.B;
-                actorB.PerformSpawn();
+                return true;
             }
             else
             {
                 Debug.LogError("Invalid spawn state!");
-                actorA.PerformSpawn();
+            }
+        }
+        else if (CurrentSide == Side.B)
+        {
+            if (PiecesB.IsValidSpawn())
+            {
+                CurrentSide = Side.A;
+                CurrentGamePhase = GamePhase.Move;
+                return true;
+            }
+            else
+            {
+                Debug.LogError("Invalid spawn state!");
             }
         }
         else
         {
-            if (piecesB.IsValidSpawn())
-            {
-                CurrentSide = Side.A;
-                CurrentGamePhase.Value = GamePhase.Move;
-                actorA.PerformMove();
-            }
-            else
-            {
-                Debug.LogError("Invalid spawn state!");
-                actorB.PerformSpawn();
-            }
+            Debug.LogError("Tried to confirm side when no side is assigned!");
         }
+
+        return false;
     }
 
-    public void PlacePiece(MoveInfo move)
-    {
-        UpdateGridArray(move);
-        UpdatePieceWorldPosition(move);
-        UpdatePiecePosition(move);
-    }
-
-    public void MovePiece(MoveInfo move)
+    public bool MovePiece(MoveInfo move)
     {
         if (TryMovePiece(move))
         {
@@ -141,36 +94,31 @@ public class Board : MonoBehaviour
             GameOutput gameOutput = CheckGameEnd();
             if (gameOutput != GameOutput.None)
             {
-                EndGame(gameOutput);
-                return;
+                CurrentGamePhase = GamePhase.End;
+                CurrentGameOutput = gameOutput;
+                return true;
             }
 
             // Flip side
             if (CurrentSide == Side.A)
             {
                 CurrentSide = Side.B;
-                actorB.PerformMove();
+                return true;
             }
             else
             {
                 CurrentSide = Side.A;
-                actorA.PerformMove();
+                return true;
             }
         }
-        else
-        {
-            // Try again
-            if (CurrentSide == Side.A)
-                actorA.PerformMove();
-            else
-                actorB.PerformMove();
-        }
+
+        return false;
     }
 
     public GameOutput CheckGameEnd()
     {
-        Piece flagA = piecesA.GetPiece(PieceRank.Flag);
-        Piece flagB = piecesB.GetPiece(PieceRank.Flag);
+        Piece flagA = PiecesA.GetPiece(PieceRank.Flag);
+        Piece flagB = PiecesB.GetPiece(PieceRank.Flag);
 
         if (flagA == null)
         {
@@ -191,12 +139,6 @@ public class Board : MonoBehaviour
         return GameOutput.None;
     }
 
-    private void EndGame(GameOutput gameOutput)
-    {
-        CurrentGameOutput = gameOutput;
-        CurrentGamePhase.Value = GamePhase.End;
-    }
-
     private bool TryMovePiece(MoveInfo move)
     {
         if (!IsValidMove(move))
@@ -204,7 +146,7 @@ public class Board : MonoBehaviour
 
         Piece thisPiece = move.Piece;
         BoardPosition nextPos = move.TargetPosition;
-        Piece otherPiece = pieceGrid[nextPos.x, nextPos.y];
+        Piece otherPiece = PieceGrid[nextPos.x, nextPos.y];
 
         // If other piece exists on target position
         if (otherPiece != null)
@@ -221,6 +163,12 @@ public class Board : MonoBehaviour
         }
 
         return true;
+    }
+
+    private void PlacePiece(MoveInfo move)
+    {
+        UpdateGridArray(move);
+        UpdatePiecePosition(move);
     }
 
     private void AttackPiece(Piece pieceA, Piece pieceB)
@@ -244,20 +192,12 @@ public class Board : MonoBehaviour
     private void KillPiece(Piece piece)
     {
         BoardPosition pos = piece.BoardPosition;
-        pieceGrid[pos.x, pos.y] = null;
+        PieceGrid[pos.x, pos.y] = null;
 
         if (piece.Properties.Side == Side.A)
-            piecesA.KillPiece(piece);
+            PiecesA.KillPiece(piece);
         else
-            piecesB.KillPiece(piece);
-    }
-
-    private void UpdatePieceWorldPosition(MoveInfo move)
-    {
-        if (!move.Piece.gameObject.activeInHierarchy)
-            return;
-
-        move.Piece.transform.position = GetCellToWorld(move.TargetPosition);
+            PiecesB.KillPiece(piece);
     }
 
     private void UpdatePiecePosition(MoveInfo move)
@@ -271,20 +211,14 @@ public class Board : MonoBehaviour
         BoardPosition nextPos = move.TargetPosition;
 
         if (IsPositionInsideGrid(lastPos))
-            pieceGrid[lastPos.x, lastPos.y] = null;
-        pieceGrid[nextPos.x, nextPos.y] = move.Piece;
+            PieceGrid[lastPos.x, lastPos.y] = null;
+        PieceGrid[nextPos.x, nextPos.y] = move.Piece;
     }
 
-    #region Helpers
-    public PieceContainer GetPieceContainer(Side side)
-    {
-        return side == Side.A ? piecesA : piecesB;
-    }
-    
-    public List<MoveInfo> GetAllValidMoves(Actor actor)
+    public List<MoveInfo> GetAllValidMoves(Side side)
     {
         List<MoveInfo> allPossibleMoves = new List<MoveInfo>();
-        PieceContainer pieces = actor == actorA ? piecesA : piecesB;
+        PieceContainer pieces = side == Side.A ? PiecesA : PiecesB;
 
         foreach (Piece piece in pieces.ActivePieces)
             foreach (MoveInfo move in GetPieceValidMoves(piece))
@@ -293,15 +227,9 @@ public class Board : MonoBehaviour
         return allPossibleMoves;
     }
 
-    public Vector3 GetCellToWorld(BoardPosition pos)
+    public PieceContainer GetPieceContainer(Side side)
     {
-        return grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));
-    }
-
-    public BoardPosition GetWorldToCell(Vector3 worldPos)
-    {
-        Vector3Int cellPos = grid.WorldToCell(worldPos);
-        return new BoardPosition(cellPos.x, cellPos.y);
+        return side == Side.A ? PiecesA : PiecesB;
     }
 
     public List<MoveInfo> GetPieceValidMoves(Piece piece)
@@ -322,11 +250,6 @@ public class Board : MonoBehaviour
         return moves;
     }
 
-    public bool IsPositionInsideGrid(BoardPosition pos)
-    {
-        return !(pos.x < 0 || pos.y < 0 || pos.x >= Width || pos.y >= Height);
-    }
-
     public bool IsValidMove(MoveInfo move)
     {
         Piece piece = move.Piece;
@@ -338,7 +261,7 @@ public class Board : MonoBehaviour
         if (!piece.BoardPosition.IsPositionAdjacent(targetPos))
             return false;
 
-        Piece otherPiece = pieceGrid[targetPos.x, targetPos.y];
+        Piece otherPiece = PieceGrid[targetPos.x, targetPos.y];
 
         if (otherPiece == null)
             return true;
@@ -348,5 +271,9 @@ public class Board : MonoBehaviour
 
         return false;
     }
-    #endregion
+
+    public bool IsPositionInsideGrid(BoardPosition pos)
+    {
+        return !(pos.x < 0 || pos.y < 0 || pos.x >= Width || pos.y >= Height);
+    }
 }

@@ -35,7 +35,7 @@ public class EnemyAI : Actor
         yield return new WaitForSeconds(thinkTime);
         // TODO: Smart spawning
         RandomizeSpawns();
-        board.ConfirmSpawn();
+        gameManager.ConfirmSpawn();
 
         isThinking = false;
     }
@@ -46,7 +46,7 @@ public class EnemyAI : Actor
 
         // TODO: Remove wait timer
         yield return new WaitForSeconds(thinkTime);
-        board.MovePiece(GetMove());
+        gameManager.MovePiece(GetMove());
 
         isThinking = false;
     }
@@ -54,7 +54,7 @@ public class EnemyAI : Actor
     private MoveInfo GetMove()
     {
         // TODO: Enemy AI
-        List<MoveInfo> allPossibleMoves = board.GetAllValidMoves(this);
+        List<MoveInfo> allPossibleMoves = gameManager.Board.GetAllValidMoves(side);
         return allPossibleMoves[Random.Range(0, allPossibleMoves.Count)];
     }
 }

@@ -7,11 +7,11 @@ public class UIController : MonoBehaviour
     [SerializeField] private GameObject mainUI = null;
     [SerializeField] private GameObject spawningUI = null;
     [SerializeField] private EndView endView = null;
-    [SerializeField] private Board board = null;
+    [SerializeField] private GameManager gameManager = null;
 
     private void Awake()
     {
-        board.CurrentGamePhase.ValueChanged += OnGamePhaseChanged;
+        gameManager.GamePhaseChanged += OnGamePhaseChanged;
     }
 
     private void Start()
@@ -32,6 +32,6 @@ public class UIController : MonoBehaviour
         else if (newGamePhase == GamePhase.Spawn)
             spawningUI.SetActive(true);
         else
-            endView.Enter(board.CurrentGameOutput);
+            endView.Enter(gameManager.Board.CurrentGameOutput);
     }
 }

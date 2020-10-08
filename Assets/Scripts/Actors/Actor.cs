@@ -5,10 +5,10 @@ using UnityEngine;
 public abstract class Actor : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] protected Board board = null;
+    [SerializeField] protected GameManager gameManager = null;
 
     [Header("Settings")]
-    [SerializeField] private Side side = Side.Invalid;
+    [SerializeField] protected Side side = Side.Invalid;
     [SerializeField] private int minSpawnHeight = 0;
     [SerializeField] private int maxSpawnHeight = 2;
 
@@ -18,7 +18,7 @@ public abstract class Actor : MonoBehaviour
     public void RandomizeSpawns()
     {
         // Get all pieces
-        PieceContainer pieceContainer = board.GetPieceContainer(side);
+        PieceContainer pieceContainer = gameManager.Board.GetPieceContainer(side);
         List<Piece> allPieces = new List<Piece>();
         foreach (Piece piece in pieceContainer.InactivePieces)
             allPieces.Add(piece);
@@ -37,6 +37,6 @@ public abstract class Actor : MonoBehaviour
 
         // Spawn pieces
         for (int i = 0; i < allPieces.Count; i++)
-            board.SpawnPiece(new MoveInfo(allPieces[i], spawnPos[i]));
+            gameManager.SpawnPiece(new MoveInfo(allPieces[i], spawnPos[i]));
     }
 }

@@ -37,7 +37,7 @@ public class PlayerInput : Actor
     public void ConfirmSpawns()
     {
         isCurrentSpawn = false;
-        board.ConfirmSpawn();
+        gameManager.ConfirmSpawn();
     }
 
     private void OnClickUp()
@@ -57,18 +57,18 @@ public class PlayerInput : Actor
         Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mouseScreenPos);
         Vector3 piecePos = new Vector3(mouseWorldPos.x, mouseWorldPos.y, piece.transform.position.z);
-        BoardPosition targetPosition = board.GetWorldToCell(piecePos);
+        BoardPosition targetPosition = gameManager.GetWorldToCell(piecePos);
         MoveInfo move = new MoveInfo(piece, targetPosition);
         
         if (isCurrentSpawn)
         {
             isCurrentSpawn = false;
-            board.SpawnPiece(move);
+            gameManager.SpawnPiece(move);
         }
         else if (isCurrentTurn)
         {
             isCurrentTurn = false;
-            board.MovePiece(move);
+            gameManager.MovePiece(move);
         }
     }
 

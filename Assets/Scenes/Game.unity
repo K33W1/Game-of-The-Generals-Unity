@@ -2350,7 +2350,7 @@ GameObject:
   - component: {fileID: 1140391678}
   - component: {fileID: 1140391677}
   m_Layer: 0
-  m_Name: Board
+  m_Name: GameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2992,7 +2992,7 @@ MonoBehaviour:
   mainUI: {fileID: 1952106455}
   spawningUI: {fileID: 1566723057}
   endView: {fileID: 1565114099}
-  board: {fileID: 1140391677}
+  gameManager: {fileID: 1140391677}
 --- !u!1 &1366899004
 GameObject:
   m_ObjectHideFlags: 0
@@ -4697,7 +4697,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 43d9930a3e4545740862fea87d81053a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  board: {fileID: 1140391677}
+  gameManager: {fileID: 1140391677}
   side: 1
   minSpawnHeight: 0
   maxSpawnHeight: 2
@@ -5157,7 +5157,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bba92f35f965ae41bcf1a5a86622bb3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  board: {fileID: 1140391677}
+  gameManager: {fileID: 1140391677}
   side: 2
   minSpawnHeight: 5
   maxSpawnHeight: 7
