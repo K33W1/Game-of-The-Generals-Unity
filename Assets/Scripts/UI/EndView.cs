@@ -4,13 +4,16 @@ using UnityEngine;
 public class EndView : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private StringValue winnerName = null;
     [SerializeField] private TextMeshProUGUI winnerText = null;
 
-    public void Enter()
+    public void Enter(GameOutput gameOutput)
     {
         gameObject.SetActive(true);
-        winnerText.text = winnerName.Value + " won!";
+
+        if (gameOutput == GameOutput.A)
+            winnerText.text = "Player won!";
+        else
+            winnerText.text = "Enemy AI won!";
     }
 
     public void Exit()

@@ -2372,11 +2372,6 @@ MonoBehaviour:
   actorB: {fileID: 2099683872}
   actorAPieces: {fileID: 1805887778}
   actorBPieces: {fileID: 2099683873}
-  currentGamePhase: {fileID: 11400000, guid: e3458a83d83cfa142ad109202429e9d0, type: 2}
-  currentGameOutput: {fileID: 11400000, guid: 9450a790f9c012c4db1790942335c418, type: 2}
-  winnerName: {fileID: 11400000, guid: 26a384cac250bcb44a1b9a5c94e56509, type: 2}
-  width: 9
-  height: 8
 --- !u!156049354 &1140391678
 Grid:
   m_ObjectHideFlags: 0
@@ -2999,7 +2994,7 @@ MonoBehaviour:
   mainUI: {fileID: 1952106455}
   spawningUI: {fileID: 1566723057}
   endView: {fileID: 1565114099}
-  currentGamePhase: {fileID: 11400000, guid: e3458a83d83cfa142ad109202429e9d0, type: 2}
+  board: {fileID: 1140391677}
 --- !u!1 &1366899004
 GameObject:
   m_ObjectHideFlags: 0
@@ -3690,7 +3685,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20a518a3f19d11d4a8afe28019108e6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  winnerName: {fileID: 11400000, guid: 26a384cac250bcb44a1b9a5c94e56509, type: 2}
   winnerText: {fileID: 1597923603}
 --- !u!1 &1566723057
 GameObject:

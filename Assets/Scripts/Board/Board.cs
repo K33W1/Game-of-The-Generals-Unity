@@ -11,17 +11,12 @@ public class Board : MonoBehaviour
     [SerializeField] private PieceContainer actorAPieces = null;
     [SerializeField] private PieceContainer actorBPieces = null;
 
-    [Header("Scriptable Objects")]
-    [SerializeField] private GamePhaseObject currentGamePhase = null;
-    [SerializeField] private GameOutputObject currentGameOutput = null;
-    [SerializeField] private StringValue winnerName = null;
+    public const int Width = 9;
+    public const int Height = 8;
 
-    [Header("Settings")]
-    [SerializeField] private int width = 9;
-    [SerializeField] private int height = 8;
-
-    public int Width => width;
-    public int Height => height;
+    public GamePhaseObservable CurrentGamePhase { get; } = new GamePhaseObservable();
+    public GameOutput CurrentGameOutput { get; private set; } = GameOutput.None;
+    public Side CurrentSide { get; private set; } = Side.Invalid;
 
     private Grid grid = null;
     private Piece[,] pieceGrid = null;
@@ -29,19 +24,30 @@ public class Board : MonoBehaviour
     private void Awake()
     {
         grid = GetComponent<Grid>();
-        pieceGrid = new Piece[width, height];
+        pieceGrid = new Piece[Width, Height];
     }
 
     private void Start()
     {
+        // Starting values
+        CurrentGamePhase.Value = GamePhase.Spawn;
+        CurrentGameOutput = GameOutput.None;
+        CurrentSide = Side.A;
+
         actorA.PerformSpawn();
     }
 
     public void SpawnPiece(MoveInfo move)
     {
+        if (CurrentGamePhase.Value != GamePhase.Spawn)
+        {
+            Debug.LogError("Tried to spawn piece on wrong game phase!");
+            return;
+        }
+
         BoardPosition pos = move.TargetPosition;
 
-        if (currentGamePhase.Value == GamePhase.SpawnA)
+        if (CurrentSide == Side.A)
         {
             if (pos.x >= 0 && pos.x < Width && pos.y >= 0 && pos.y <= 2)
             {
@@ -51,7 +57,7 @@ public class Board : MonoBehaviour
 
             actorA.PerformSpawn();
         }
-        else if (currentGamePhase.Value == GamePhase.SpawnB)
+        else
         {
             if (pos.x >= 0 && pos.x < Width && pos.y >= 5 && pos.y <= 7)
             {
@@ -61,19 +67,21 @@ public class Board : MonoBehaviour
 
             actorB.PerformSpawn();
         }
-        else
-        {
-            Debug.LogError("Tried to spawn a piece in wrong game phase!");
-        }
     }
 
     public void ConfirmSpawn()
     {
-        if (currentGamePhase.Value == GamePhase.SpawnA)
+        if (CurrentGamePhase.Value != GamePhase.Spawn)
+        {
+            Debug.LogError("Tried to confirm spawn on wrong game phase!");
+            return;
+        }
+
+        if (CurrentSide == Side.A)
         {
             if (actorAPieces.IsValidSpawn())
             {
-                currentGamePhase.Value = GamePhase.SpawnB;
+                CurrentSide = Side.B;
                 actorB.PerformSpawn();
             }
             else
@@ -82,11 +90,12 @@ public class Board : MonoBehaviour
                 actorA.PerformSpawn();
             }
         }
-        else if (currentGamePhase.Value == GamePhase.SpawnB)
+        else
         {
             if (actorBPieces.IsValidSpawn())
             {
-                currentGamePhase.Value = GamePhase.MoveA;
+                CurrentSide = Side.A;
+                CurrentGamePhase.Value = GamePhase.Move;
                 actorA.PerformMove();
             }
             else
@@ -94,10 +103,6 @@ public class Board : MonoBehaviour
                 Debug.LogError("Invalid spawn state!");
                 actorB.PerformSpawn();
             }
-        }
-        else
-        {
-            Debug.LogError("Tried to confirm spawn on wrong game phase!");
         }
     }
 
@@ -121,28 +126,24 @@ public class Board : MonoBehaviour
             }
 
             // Flip side
-            if (currentGamePhase.Value == GamePhase.MoveA)
+            if (CurrentSide == Side.A)
             {
-                currentGamePhase.Value = GamePhase.MoveB;
+                CurrentSide = Side.B;
                 actorB.PerformMove();
             }
             else
             {
-                currentGamePhase.Value = GamePhase.MoveA;
+                CurrentSide = Side.A;
                 actorA.PerformMove();
             }
         }
         else
         {
             // Try again
-            if (currentGamePhase.Value == GamePhase.MoveA)
-            {
+            if (CurrentSide == Side.A)
                 actorA.PerformMove();
-            }
             else
-            {
                 actorB.PerformMove();
-            }
         }
     }
 
@@ -161,9 +162,9 @@ public class Board : MonoBehaviour
         }
         else
         {
-            if (currentGamePhase.Value == GamePhase.MoveB && flagA.BoardPosition.y == Height - 1)
+            if (CurrentSide == Side.B && flagA.BoardPosition.y == Height - 1)
                 return GameOutput.A;
-            else if (currentGamePhase.Value == GamePhase.MoveA && flagB.BoardPosition.y == 0)
+            else if (CurrentSide == Side.A && flagB.BoardPosition.y == 0)
                 return GameOutput.B;
         }
 
@@ -172,13 +173,8 @@ public class Board : MonoBehaviour
 
     private void EndGame(GameOutput gameOutput)
     {
-        if (gameOutput == GameOutput.A)
-            winnerName.Value = "Player";
-        else
-            winnerName.Value = "AI";
-
-        currentGameOutput.Value = GameOutput.None;
-        currentGamePhase.Value = GamePhase.End;
+        CurrentGamePhase.Value = GamePhase.End;
+        CurrentGameOutput = gameOutput;
     }
 
     private bool TryMovePiece(MoveInfo move)
