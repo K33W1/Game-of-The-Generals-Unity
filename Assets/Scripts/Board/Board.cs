@@ -193,8 +193,8 @@ public class Board : MonoBehaviour
 
     private void EndGame(GameOutput gameOutput)
     {
-        CurrentGamePhase.Value = GamePhase.End;
         CurrentGameOutput = gameOutput;
+        CurrentGamePhase.Value = GamePhase.End;
     }
 
     private bool TryMovePiece(MoveInfo move)
