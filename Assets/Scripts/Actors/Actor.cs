@@ -6,9 +6,9 @@ public abstract class Actor : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] protected Board board = null;
-    [SerializeField] protected PieceContainer pieces = null;
 
     [Header("Settings")]
+    [SerializeField] private Side side = Side.Invalid;
     [SerializeField] private int minSpawnHeight = 0;
     [SerializeField] private int maxSpawnHeight = 2;
 
@@ -18,14 +18,15 @@ public abstract class Actor : MonoBehaviour
     public void RandomizeSpawns()
     {
         // Get all pieces
+        PieceContainer pieceContainer = board.GetPieceContainer(side);
         List<Piece> allPieces = new List<Piece>();
-        List<BoardPosition> spawnPos = new List<BoardPosition>();
-        foreach (Piece piece in pieces.InactivePieces)
+        foreach (Piece piece in pieceContainer.InactivePieces)
             allPieces.Add(piece);
-        foreach (Piece piece in pieces.ActivePieces)
+        foreach (Piece piece in pieceContainer.ActivePieces)
             allPieces.Add(piece);
 
         // List all valid spawn positions
+        List<BoardPosition> spawnPos = new List<BoardPosition>();
         for (int i = 0; i < Board.Width; i++)
             for (int j = minSpawnHeight; j <= maxSpawnHeight; j++)
                 spawnPos.Add(new BoardPosition(i, j));

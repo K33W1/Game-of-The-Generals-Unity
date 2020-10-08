@@ -4,8 +4,6 @@ using UnityEngine.InputSystem;
 [DisallowMultipleComponent]
 public class PlayerInput : Actor
 {
-    public PieceContainer PieceContainer => pieces;
-
     private InputMaster input = null;
     private DragAndDropController dragAndDropController = null;
     

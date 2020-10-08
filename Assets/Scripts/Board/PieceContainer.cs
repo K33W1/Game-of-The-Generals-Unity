@@ -1,16 +1,16 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class PieceContainer : MonoBehaviour
+public class PieceContainer
 {
-    public List<Piece> ActivePieces { get; private set; } = new List<Piece>();
-    public List<Piece> InactivePieces { get; private set; } = new List<Piece>();
-
-    private void Start()
+    public PieceContainer()
     {
-        foreach (Piece piece in transform.GetComponentsInChildren<Piece>())
-            InactivePieces.Add(piece);
+        ActivePieces = new List<Piece>();
+        InactivePieces = new List<Piece>();
     }
+
+    public List<Piece> ActivePieces { get; }
+    public List<Piece> InactivePieces { get; }
 
     public Piece GetPiece(PieceRank rank)
     {

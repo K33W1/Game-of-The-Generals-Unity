@@ -8,8 +8,6 @@ public class Board : MonoBehaviour
     [Header("References")]
     [SerializeField] private Actor actorA = null;
     [SerializeField] private Actor actorB = null;
-    [SerializeField] private PieceContainer actorAPieces = null;
-    [SerializeField] private PieceContainer actorBPieces = null;
 
     public const int Width = 9;
     public const int Height = 8;
@@ -20,11 +18,15 @@ public class Board : MonoBehaviour
 
     private Grid grid = null;
     private Piece[,] pieceGrid = null;
+    private PieceContainer piecesA = null;
+    private PieceContainer piecesB = null;
 
     private void Awake()
     {
         grid = GetComponent<Grid>();
         pieceGrid = new Piece[Width, Height];
+        piecesA = new PieceContainer();
+        piecesB = new PieceContainer();
     }
 
     private void Start()
@@ -33,6 +35,24 @@ public class Board : MonoBehaviour
         CurrentGamePhase.Value = GamePhase.Spawn;
         CurrentGameOutput = GameOutput.None;
         CurrentSide = Side.A;
+
+        // Get the piece gameobjects
+        foreach (Piece piece in FindObjectsOfType<Piece>())
+        {
+            if (piece.Properties.Side == Side.A)
+            {
+                piecesA.InactivePieces.Add(piece);
+            }
+            else if (piece.Properties.Side == Side.B)
+            {
+                piecesB.InactivePieces.Add(piece);
+            }
+            else
+            {
+                Debug.LogError("Piece has no side!");
+                return;
+            }
+        }
 
         actorA.PerformSpawn();
     }
@@ -52,7 +72,7 @@ public class Board : MonoBehaviour
             if (pos.x >= 0 && pos.x < Width && pos.y >= 0 && pos.y <= 2)
             {
                 PlacePiece(move);
-                actorAPieces.ActivatePiece(move.Piece);
+                piecesA.ActivatePiece(move.Piece);
             }
 
             actorA.PerformSpawn();
@@ -62,7 +82,7 @@ public class Board : MonoBehaviour
             if (pos.x >= 0 && pos.x < Width && pos.y >= 5 && pos.y <= 7)
             {
                 PlacePiece(move);
-                actorBPieces.ActivatePiece(move.Piece);
+                piecesB.ActivatePiece(move.Piece);
             }
 
             actorB.PerformSpawn();
@@ -79,7 +99,7 @@ public class Board : MonoBehaviour
 
         if (CurrentSide == Side.A)
         {
-            if (actorAPieces.IsValidSpawn())
+            if (piecesA.IsValidSpawn())
             {
                 CurrentSide = Side.B;
                 actorB.PerformSpawn();
@@ -92,7 +112,7 @@ public class Board : MonoBehaviour
         }
         else
         {
-            if (actorBPieces.IsValidSpawn())
+            if (piecesB.IsValidSpawn())
             {
                 CurrentSide = Side.A;
                 CurrentGamePhase.Value = GamePhase.Move;
@@ -149,8 +169,8 @@ public class Board : MonoBehaviour
 
     public GameOutput CheckGameEnd()
     {
-        Piece flagA = actorAPieces.GetPiece(PieceRank.Flag);
-        Piece flagB = actorBPieces.GetPiece(PieceRank.Flag);
+        Piece flagA = piecesA.GetPiece(PieceRank.Flag);
+        Piece flagB = piecesB.GetPiece(PieceRank.Flag);
 
         if (flagA == null)
         {
@@ -227,9 +247,9 @@ public class Board : MonoBehaviour
         pieceGrid[pos.x, pos.y] = null;
 
         if (piece.Properties.Side == Side.A)
-            actorAPieces.KillPiece(piece);
+            piecesA.KillPiece(piece);
         else
-            actorBPieces.KillPiece(piece);
+            piecesB.KillPiece(piece);
     }
 
     private void UpdatePieceWorldPosition(MoveInfo move)
@@ -256,10 +276,15 @@ public class Board : MonoBehaviour
     }
 
     #region Helpers
+    public PieceContainer GetPieceContainer(Side side)
+    {
+        return side == Side.A ? piecesA : piecesB;
+    }
+    
     public List<MoveInfo> GetAllValidMoves(Actor actor)
     {
         List<MoveInfo> allPossibleMoves = new List<MoveInfo>();
-        PieceContainer pieces = actor == actorA ? actorAPieces : actorBPieces;
+        PieceContainer pieces = actor == actorA ? piecesA : piecesB;
 
         foreach (Piece piece in pieces.ActivePieces)
             foreach (MoveInfo move in GetPieceValidMoves(piece))

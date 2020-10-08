@@ -2370,8 +2370,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   actorA: {fileID: 1805887777}
   actorB: {fileID: 2099683872}
-  actorAPieces: {fileID: 1805887778}
-  actorBPieces: {fileID: 2099683873}
 --- !u!156049354 &1140391678
 Grid:
   m_ObjectHideFlags: 0
@@ -4644,7 +4642,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1805887776}
   - component: {fileID: 1805887777}
-  - component: {fileID: 1805887778}
   - component: {fileID: 1805887780}
   m_Layer: 0
   m_Name: Player
@@ -4701,21 +4698,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   board: {fileID: 1140391677}
-  pieces: {fileID: 1805887778}
+  side: 1
   minSpawnHeight: 0
   maxSpawnHeight: 2
---- !u!114 &1805887778
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1805887775}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58f53cfdde5938f45ae04cf4007d2283, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1805887780
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5118,7 +5103,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2099683871}
   - component: {fileID: 2099683872}
-  - component: {fileID: 2099683873}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -5174,22 +5158,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   board: {fileID: 1140391677}
-  pieces: {fileID: 2099683873}
+  side: 2
   minSpawnHeight: 5
   maxSpawnHeight: 7
   thinkTime: 0.1
---- !u!114 &2099683873
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2099683870}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58f53cfdde5938f45ae04cf4007d2283, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &2108292936
 PrefabInstance:
   m_ObjectHideFlags: 0
