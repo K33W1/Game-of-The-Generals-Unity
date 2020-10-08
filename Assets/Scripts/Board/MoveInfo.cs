@@ -1,9 +1,9 @@
 ﻿public struct MoveInfo
 {
-    public Piece Piece;
+    public PieceInfo Piece;
     public BoardPosition TargetPosition;
 
-    public MoveInfo(Piece piece, BoardPosition targetPosition)
+    public MoveInfo(PieceInfo piece, BoardPosition targetPosition)
     {
         Piece = piece;
         TargetPosition = targetPosition;

@@ -51,14 +51,14 @@ public class PlayerInput : Actor
 
         Piece piece = heldObject.GetComponent<Piece>();
 
-        if (piece.Properties.Side != Side.A)
+        if (piece.Info.Side != Side.A)
             return;
 
         Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mouseScreenPos);
         Vector3 piecePos = new Vector3(mouseWorldPos.x, mouseWorldPos.y, piece.transform.position.z);
         BoardPosition targetPosition = gameManager.GetWorldToCell(piecePos);
-        MoveInfo move = new MoveInfo(piece, targetPosition);
+        MoveInfo move = new MoveInfo(piece.Info, targetPosition);
         
         if (isCurrentSpawn)
         {

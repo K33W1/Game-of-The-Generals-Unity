@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -12,6 +13,7 @@ public class GameManager : MonoBehaviour
     public event Action<GamePhase> GamePhaseChanged;
 
     public Board Board { get; private set; } = null;
+    public Dictionary<PieceInfo, Piece> pieceToMonoMap = new Dictionary<PieceInfo, Piece>();
 
     private Grid grid = null;
 
@@ -23,7 +25,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         // Board dependencies
-        Piece[,] pieceGrid = new Piece[Board.Width, Board.Height];
+        PieceInfo[,] pieceGrid = new PieceInfo[Board.Width, Board.Height];
         PieceContainer piecesA = new PieceContainer();
         PieceContainer piecesB = new PieceContainer();
         GamePhase startingGamePhase = GamePhase.Spawn;
@@ -33,13 +35,15 @@ public class GameManager : MonoBehaviour
         // Get the piece gameobjects
         foreach (Piece piece in FindObjectsOfType<Piece>())
         {
-            if (piece.Properties.Side == Side.A)
+            pieceToMonoMap.Add(piece.Info, piece);
+
+            if (piece.Info.Side == Side.A)
             {
-                piecesA.InactivePieces.Add(piece);
+                piecesA.InactivePieces.Add(piece.Info);
             }
-            else if (piece.Properties.Side == Side.B)
+            else if (piece.Info.Side == Side.B)
             {
-                piecesB.InactivePieces.Add(piece);
+                piecesB.InactivePieces.Add(piece.Info);
             }
             else
             {
@@ -126,10 +130,10 @@ public class GameManager : MonoBehaviour
 
     private void UpdatePieceWorldPosition(MoveInfo move)
     {
-        if (!move.Piece.gameObject.activeSelf)
+        if (!move.Piece.IsAlive)
             return;
 
-        move.Piece.transform.position = GetCellToWorld(move.TargetPosition);
+        pieceToMonoMap[move.Piece].transform.position = GetCellToWorld(move.TargetPosition);
     }
 
     #region Helpers

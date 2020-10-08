@@ -19,10 +19,10 @@ public abstract class Actor : MonoBehaviour
     {
         // Get all pieces
         PieceContainer pieceContainer = gameManager.Board.GetPieceContainer(side);
-        List<Piece> allPieces = new List<Piece>();
-        foreach (Piece piece in pieceContainer.InactivePieces)
+        List<PieceInfo> allPieces = new List<PieceInfo>();
+        foreach (PieceInfo piece in pieceContainer.InactivePieces)
             allPieces.Add(piece);
-        foreach (Piece piece in pieceContainer.ActivePieces)
+        foreach (PieceInfo piece in pieceContainer.ActivePieces)
             allPieces.Add(piece);
 
         // List all valid spawn positions

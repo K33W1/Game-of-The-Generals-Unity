@@ -1,4 +1,7 @@
-﻿public struct BoardPosition
+﻿using System;
+
+[Serializable]
+public struct BoardPosition
 {
     public int x;
     public int y;

@@ -6,24 +6,30 @@ public class Piece : MonoBehaviour
     [SerializeField] private Sprite hiddenSprite = null;
 
     [Header("Settings")]
-    [SerializeField] private PieceProps pieceProps = new PieceProps();
+    [SerializeField] private PieceInfo pieceInfo = null;
 
-    public PieceProps Properties => pieceProps;
+    public PieceInfo Info => pieceInfo;
 
-    public BoardPosition BoardPosition { get; set; } = new BoardPosition(-1, -1);
-
+    private new Collider2D collider = null;
     private SpriteRenderer spriteRenderer = null;
     private Sprite visibleSprite = null;
     private bool isVisible = true;
 
     private void Awake()
     {
+        collider = GetComponent<Collider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void Start()
     {
         visibleSprite = spriteRenderer.sprite;
+    }
+
+    private void Update()
+    {
+        collider.enabled = pieceInfo.IsAlive;
+        spriteRenderer.enabled = pieceInfo.IsAlive;
     }
 
     public void ToggleVisibility()

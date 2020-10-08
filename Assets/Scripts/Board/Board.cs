@@ -6,7 +6,7 @@ public class Board
     public const int Width = 9;
     public const int Height = 8;
 
-    public readonly Piece[,] PieceGrid = null;
+    public readonly PieceInfo[,] PieceGrid = null;
     public readonly PieceContainer PiecesA = null;
     public readonly PieceContainer PiecesB = null;
 
@@ -14,7 +14,7 @@ public class Board
     public GameOutput CurrentGameOutput { get; private set; } = GameOutput.None;
     public Side CurrentSide { get; private set; } = Side.Invalid;
 
-    public Board(Piece[,] pieceGrid, PieceContainer piecesA, PieceContainer piecesB, GamePhase currentGamePhase, GameOutput currentGameOutput, Side currentSide)
+    public Board(PieceInfo[,] pieceGrid, PieceContainer piecesA, PieceContainer piecesB, GamePhase currentGamePhase, GameOutput currentGameOutput, Side currentSide)
     {
         PieceGrid = pieceGrid;
         PiecesA = piecesA;
@@ -117,8 +117,8 @@ public class Board
 
     public GameOutput CheckGameEnd()
     {
-        Piece flagA = PiecesA.GetPiece(PieceRank.Flag);
-        Piece flagB = PiecesB.GetPiece(PieceRank.Flag);
+        PieceInfo flagA = PiecesA.GetPiece(PieceRank.Flag);
+        PieceInfo flagB = PiecesB.GetPiece(PieceRank.Flag);
 
         if (flagA == null)
         {
@@ -144,9 +144,9 @@ public class Board
         if (!IsValidMove(move))
             return false;
 
-        Piece thisPiece = move.Piece;
+        PieceInfo thisPiece = move.Piece;
         BoardPosition nextPos = move.TargetPosition;
-        Piece otherPiece = PieceGrid[nextPos.x, nextPos.y];
+        PieceInfo otherPiece = PieceGrid[nextPos.x, nextPos.y];
 
         // If other piece exists on target position
         if (otherPiece != null)
@@ -154,7 +154,7 @@ public class Board
             AttackPiece(thisPiece, otherPiece);
 
             // Check if piece is still alive
-            if (thisPiece.gameObject.activeSelf)
+            if (thisPiece.IsAlive)
                 PlacePiece(move);
         }
         else
@@ -171,15 +171,14 @@ public class Board
         UpdatePiecePosition(move);
     }
 
-    private void AttackPiece(Piece pieceA, Piece pieceB)
+    private void AttackPiece(PieceInfo pieceA, PieceInfo pieceB)
     {
-        Piece winningPiece = GameRules.GetWinningPiece(pieceA, pieceB);
-        // TODO: Battle animation
+        Side winningSide = GameRules.GetWinningSide(pieceA, pieceB);
 
         // Remove losing piece
-        if (winningPiece != null)
+        if (winningSide != Side.Invalid)
         {
-            Piece losingPiece = winningPiece == pieceA ? pieceB : pieceA;
+            PieceInfo losingPiece = winningSide == Side.A ? pieceB : pieceA;
             KillPiece(losingPiece);
         }
         else
@@ -189,12 +188,12 @@ public class Board
         }
     }
 
-    private void KillPiece(Piece piece)
+    private void KillPiece(PieceInfo piece)
     {
         BoardPosition pos = piece.BoardPosition;
         PieceGrid[pos.x, pos.y] = null;
 
-        if (piece.Properties.Side == Side.A)
+        if (piece.Side == Side.A)
             PiecesA.KillPiece(piece);
         else
             PiecesB.KillPiece(piece);
@@ -220,7 +219,7 @@ public class Board
         List<MoveInfo> allPossibleMoves = new List<MoveInfo>();
         PieceContainer pieces = side == Side.A ? PiecesA : PiecesB;
 
-        foreach (Piece piece in pieces.ActivePieces)
+        foreach (PieceInfo piece in pieces.ActivePieces)
             foreach (MoveInfo move in GetPieceValidMoves(piece))
                 allPossibleMoves.Add(move);
 
@@ -232,7 +231,7 @@ public class Board
         return side == Side.A ? PiecesA : PiecesB;
     }
 
-    public List<MoveInfo> GetPieceValidMoves(Piece piece)
+    public List<MoveInfo> GetPieceValidMoves(PieceInfo piece)
     {
         List<MoveInfo> moves = new List<MoveInfo>();
 
@@ -252,21 +251,21 @@ public class Board
 
     public bool IsValidMove(MoveInfo move)
     {
-        Piece piece = move.Piece;
+        PieceInfo thisPiece = move.Piece;
         BoardPosition targetPos = move.TargetPosition;
 
         if (!IsPositionInsideGrid(targetPos))
             return false;
 
-        if (!piece.BoardPosition.IsPositionAdjacent(targetPos))
+        if (!thisPiece.BoardPosition.IsPositionAdjacent(targetPos))
             return false;
 
-        Piece otherPiece = PieceGrid[targetPos.x, targetPos.y];
+        PieceInfo otherPiece = PieceGrid[targetPos.x, targetPos.y];
 
         if (otherPiece == null)
             return true;
 
-        if (otherPiece.Properties.Side != piece.Properties.Side)
+        if (otherPiece.Side != thisPiece.Side)
             return true;
 
         return false;

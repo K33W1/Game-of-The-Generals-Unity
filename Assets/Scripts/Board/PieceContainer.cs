@@ -5,33 +5,33 @@ public class PieceContainer
 {
     public PieceContainer()
     {
-        ActivePieces = new List<Piece>();
-        InactivePieces = new List<Piece>();
+        ActivePieces = new List<PieceInfo>();
+        InactivePieces = new List<PieceInfo>();
     }
 
-    public List<Piece> ActivePieces { get; }
-    public List<Piece> InactivePieces { get; }
+    public List<PieceInfo> ActivePieces { get; }
+    public List<PieceInfo> InactivePieces { get; }
 
-    public Piece GetPiece(PieceRank rank)
+    public PieceInfo GetPiece(PieceRank rank)
     {
-        return ActivePieces.Find(piece => piece.Properties.Rank == rank);
+        return ActivePieces.Find(piece => piece.Rank == rank);
     }
 
-    public void ActivatePiece(Piece piece)
+    public void ActivatePiece(PieceInfo piece)
     {
         if (InactivePieces.Remove(piece))
         {
-            piece.gameObject.SetActive(true);
+            piece.IsAlive = true;
             ActivePieces.Add(piece);
         }
     }
 
-    public void KillPiece(Piece piece)
+    public void KillPiece(PieceInfo piece)
     {
         if (ActivePieces.Remove(piece))
         {
+            piece.IsAlive = false;
             InactivePieces.Add(piece);
-            piece.gameObject.SetActive(false);
         }
         else
         {
