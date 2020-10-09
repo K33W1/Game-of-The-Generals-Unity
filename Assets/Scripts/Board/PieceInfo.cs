@@ -12,7 +12,7 @@ public class PieceInfo
 
     public BoardPosition BoardPosition { get => boardPosition; set => boardPosition = value; }
     public bool IsAlive { get => isAlive; set => isAlive = value; }
-    public PieceRank Rank => rank;
+    public PieceRank Rank { get => rank; set => rank = value; }
     public Side Side => side;
 
     public PieceInfo(BoardPosition boardPosition, bool isAlive, PieceRank rank, Side side)

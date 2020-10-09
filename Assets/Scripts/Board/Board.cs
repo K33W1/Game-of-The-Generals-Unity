@@ -33,17 +33,23 @@ public class Board
         CurrentSide = currentSide;
     }
 
-    public Board Copy()
+    public Board GetCopyWithHiddenPieces(Side side)
     {
         // Board dependencies
         PieceInfo[,] pieceGrid = new PieceInfo[WIDTH, HEIGHT];
         PieceContainer piecesA = PiecesA.Copy();
         PieceContainer piecesB = PiecesB.Copy();
 
-        // Copy grid
-        for (int i = 0; i < WIDTH; i++)
-            for (int j = 0; j < HEIGHT; j++)
-                pieceGrid[i, j] = PieceGrid[i, j]?.Copy();
+        // Place pieces back into grid
+        foreach (PieceInfo pieceInfo in piecesA)
+        {
+            BoardPosition pos = pieceInfo.BoardPosition;
+            pieceGrid[pos.x, pos.y] = pieceInfo;
+        }
+
+        // Hide ranks
+        foreach (PieceInfo pieceInfo in side == Side.A ? piecesB : piecesA)
+            pieceInfo.Rank = PieceRank.Invalid;
 
         return new Board(
             pieceGrid,
@@ -55,10 +61,10 @@ public class Board
             CurrentSide);
     }
 
-    public List<MoveInfo> GetAllValidMoves(Side side)
+    public List<MoveInfo> GetAllValidMoves()
     {
         List<MoveInfo> allPossibleMoves = new List<MoveInfo>();
-        PieceContainer pieces = side == Side.A ? PiecesA : PiecesB;
+        PieceContainer pieces = CurrentSide == Side.A ? PiecesA : PiecesB;
 
         foreach (PieceInfo piece in pieces.ActivePieces)
             foreach (MoveInfo move in GetPieceValidMoves(piece))
@@ -134,30 +140,6 @@ public class Board
         return false;
     }
 
-    public GameOutput CheckGameEnd()
-    {
-        PieceInfo flagA = PiecesA.Flag;
-        PieceInfo flagB = PiecesB.Flag;
-
-        if (!flagA.IsAlive)
-        {
-            return GameOutput.B;
-        }
-        else if (!flagB.IsAlive)
-        {
-            return GameOutput.A;
-        }
-        else
-        {
-            if (CurrentSide == Side.B && flagA.BoardPosition.y == HEIGHT - 1)
-                return GameOutput.A;
-            else if (CurrentSide == Side.A && flagB.BoardPosition.y == 0)
-                return GameOutput.B;
-        }
-
-        return GameOutput.None;
-    }
-
     public bool MovePiece(MoveInfo move)
     {
         BoardChange? boardChange = TryMovePiece(move);
@@ -170,6 +152,7 @@ public class Board
             GameOutput gameOutput = CheckGameEnd();
             if (gameOutput != GameOutput.None)
             {
+                CurrentSide = Side.None;
                 CurrentGamePhase = GamePhase.End;
                 CurrentGameOutput = gameOutput;
                 return true;
@@ -194,7 +177,10 @@ public class Board
     private BoardChange? TryMovePiece(MoveInfo move)
     {
         if (!IsValidMove(move))
+        {
+            Debug.Log("Invalid move!");
             return null;
+        }
 
         BoardPosition newPos = move.NewPosition;
         PieceInfo thisPieceInfo = move.PieceInfo;
@@ -252,6 +238,30 @@ public class Board
             PiecesA.KillPiece(piece);
         else
             PiecesB.KillPiece(piece);
+    }
+
+    private GameOutput CheckGameEnd()
+    {
+        PieceInfo flagA = PiecesA.Flag;
+        PieceInfo flagB = PiecesB.Flag;
+
+        if (!flagA.IsAlive)
+        {
+            return GameOutput.B;
+        }
+        else if (!flagB.IsAlive)
+        {
+            return GameOutput.A;
+        }
+        else
+        {
+            if (CurrentSide == Side.B && flagA.BoardPosition.y == HEIGHT - 1)
+                return GameOutput.A;
+            else if (CurrentSide == Side.A && flagB.BoardPosition.y == 0)
+                return GameOutput.B;
+        }
+
+        return GameOutput.None;
     }
 
     private void UpdatePiecePosition(MoveInfo move)
