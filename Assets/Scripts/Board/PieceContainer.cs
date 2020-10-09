@@ -10,8 +10,6 @@ public class PieceContainer : IEnumerable<PieceInfo>
     public List<PieceInfo> InactivePieces { get; }
     public PieceInfo Flag { get; private set; }
 
-    private int enumeratorIndex = 0;
-
     public PieceContainer()
     {
         ActivePieces = new List<PieceInfo>(21);
@@ -39,11 +37,13 @@ public class PieceContainer : IEnumerable<PieceInfo>
         for (int i = 0; i < ActivePieces.Count; i++)
         {
             PieceInfo newPiece = ActivePieces[i].Copy();
+
             activePieces.Add(newPiece);
 
             if (newPiece.Rank == PieceRank.Flag)
                 flag = newPiece;
         }
+
         for (int i = 0; i < InactivePieces.Count; i++)
             inactivePieces.Add(InactivePieces[i].Copy());
 

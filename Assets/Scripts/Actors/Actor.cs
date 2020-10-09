@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public abstract class Actor : MonoBehaviour
@@ -32,8 +31,7 @@ public abstract class Actor : MonoBehaviour
                 spawnPos.Add(new BoardPosition(i, j));
 
         // Shuffle
-        System.Random random = new System.Random();
-        spawnPos = spawnPos.OrderBy(x => random.Next()).ToList();
+        spawnPos.Shuffle();
 
         // Spawn pieces
         for (int i = 0; i < allPieces.Count; i++)

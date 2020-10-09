@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -29,10 +28,13 @@ public class EnemyAI : Actor
 
     private MoveInfo GetMove()
     {
+        // Debug
+        float startingTime = Time.realtimeSinceStartup;
+
         Board board = gameManager.Board;
 
         List<MoveInfo> allPossibleMoves = board.GetAllValidMoves();
-        List<Fraction> results = new List<Fraction>();
+        List<Fraction> results = new List<Fraction>(allPossibleMoves.Count);
 
         // Add 0/0 fractional results
         for (int i = 0; i < allPossibleMoves.Count; i++)
@@ -75,8 +77,7 @@ public class EnemyAI : Actor
                 };
 
                 // Shuffle
-                System.Random random = new System.Random();
-                ranks = ranks.OrderBy(x => random.Next()).ToList();
+                ranks.Shuffle();
                 for (int k = 0; k < PieceContainer.MAX_CAPACITY; k++)
                     boardCopy.PiecesA[k].Rank = ranks[k];
 
@@ -86,10 +87,6 @@ public class EnemyAI : Actor
                 while(boardCopy.CurrentGameOutput == GameOutput.None)
                 {
                     List<MoveInfo> currentValidMoves = boardCopy.GetAllValidMoves();
-
-                    if (currentValidMoves.Count == 0)
-                        Debug.Log("ZERO!?!");
-
                     boardCopy.MovePiece(currentValidMoves[Random.Range(0, currentValidMoves.Count)]);
                 }
 
@@ -114,6 +111,9 @@ public class EnemyAI : Actor
                 bestMoveIndex = i;
             }
         }
+
+        // Debug
+        Debug.Log("AI took " + (Time.realtimeSinceStartup - startingTime).ToString());
 
         return allPossibleMoves[bestMoveIndex];
     }
