@@ -39,11 +39,11 @@ public class GameManager : MonoBehaviour
 
             if (piece.Info.Side == Side.A)
             {
-                piecesA.InactivePieces.Add(piece.Info);
+                piecesA.Add(piece.Info);
             }
             else if (piece.Info.Side == Side.B)
             {
-                piecesB.InactivePieces.Add(piece.Info);
+                piecesB.Add(piece.Info);
             }
             else
             {

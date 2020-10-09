@@ -151,14 +151,14 @@ public class Board
 
     public GameOutput CheckGameEnd()
     {
-        PieceInfo flagA = PiecesA.GetPiece(PieceRank.Flag);
-        PieceInfo flagB = PiecesB.GetPiece(PieceRank.Flag);
+        PieceInfo flagA = PiecesA.Flag;
+        PieceInfo flagB = PiecesB.Flag;
 
-        if (flagA == null)
+        if (!flagA.IsAlive)
         {
             return GameOutput.B;
         }
-        else if (flagB == null)
+        else if (!flagB.IsAlive)
         {
             return GameOutput.A;
         }
