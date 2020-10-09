@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour
     public event Action<GamePhase> GamePhaseChanged;
 
     public Board Board { get; private set; } = null;
-    public Dictionary<PieceInfo, Piece> pieceToMonoMap = new Dictionary<PieceInfo, Piece>();
+    public Dictionary<PieceInfo, Piece> pieceInfoMap = new Dictionary<PieceInfo, Piece>();
 
     private Grid grid = null;
 
@@ -35,7 +35,7 @@ public class GameManager : MonoBehaviour
         // Get the piece gameobjects
         foreach (Piece piece in FindObjectsOfType<Piece>())
         {
-            pieceToMonoMap.Add(piece.Info, piece);
+            pieceInfoMap.Add(piece.Info, piece);
 
             if (piece.Info.Side == Side.A)
             {
@@ -63,7 +63,7 @@ public class GameManager : MonoBehaviour
     {
         if (Board.SpawnPiece(move))
         {
-            UpdatePieceWorldPosition(move);
+            UpdatePieceWorldPosition(move.PieceInfo);
 
             if (Board.CurrentSide == Side.A)
                 actorA.PerformSpawn();
@@ -100,7 +100,7 @@ public class GameManager : MonoBehaviour
     {
         if (Board.MovePiece(move))
         {
-            UpdatePieceWorldPosition(move);
+            UpdatePieceWorldPosition(move.PieceInfo);
 
             if (Board.CurrentGameOutput != GameOutput.None)
                 EndGame();
@@ -128,12 +128,12 @@ public class GameManager : MonoBehaviour
         GamePhaseChanged.Invoke(GamePhase.End);
     }
 
-    private void UpdatePieceWorldPosition(MoveInfo move)
+    private void UpdatePieceWorldPosition(PieceInfo pieceInfo)
     {
-        if (!move.Piece.IsAlive)
+        if (!pieceInfo.IsAlive)
             return;
 
-        pieceToMonoMap[move.Piece].transform.position = GetCellToWorld(move.TargetPosition);
+        pieceInfoMap[pieceInfo].transform.position = GetCellToWorld(pieceInfo.BoardPosition);
     }
 
     #region Helpers

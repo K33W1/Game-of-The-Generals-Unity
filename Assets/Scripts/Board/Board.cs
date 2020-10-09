@@ -41,16 +41,33 @@ public class Board
         return new Board(pieceGrid, piecesA, piecesB, gamePhase, gameOutput, side);
     }
 
+    public List<MoveInfo> GetAllValidMoves(Side side)
+    {
+        List<MoveInfo> allPossibleMoves = new List<MoveInfo>();
+        PieceContainer pieces = side == Side.A ? PiecesA : PiecesB;
+
+        foreach (PieceInfo piece in pieces.ActivePieces)
+            foreach (MoveInfo move in GetPieceValidMoves(piece))
+                allPossibleMoves.Add(move);
+
+        return allPossibleMoves;
+    }
+
+    public PieceContainer GetPieceContainer(Side side)
+    {
+        return side == Side.A ? PiecesA : PiecesB;
+    }
+
     public bool SpawnPiece(MoveInfo move)
     {
-        BoardPosition pos = move.TargetPosition;
+        BoardPosition pos = move.NewPosition;
 
         if (CurrentSide == Side.A)
         {
             if (pos.x >= 0 && pos.x < WIDTH && pos.y >= 0 && pos.y <= 2)
             {
                 PlacePiece(move);
-                PiecesA.ActivatePiece(move.Piece);
+                PiecesA.ActivatePiece(move.PieceInfo);
                 return true;
             }
 
@@ -60,7 +77,7 @@ public class Board
             if (pos.x >= 0 && pos.x < WIDTH && pos.y >= 5 && pos.y <= 7)
             {
                 PlacePiece(move);
-                PiecesB.ActivatePiece(move.Piece);
+                PiecesB.ActivatePiece(move.PieceInfo);
                 return true;
             }
         }
@@ -161,17 +178,17 @@ public class Board
         if (!IsValidMove(move))
             return false;
 
-        PieceInfo thisPiece = move.Piece;
-        BoardPosition nextPos = move.TargetPosition;
-        PieceInfo otherPiece = PieceGrid[nextPos.x, nextPos.y];
+        PieceInfo thisPieceInfo = move.PieceInfo;
+        BoardPosition nextPos = move.NewPosition;
+        PieceInfo otherPieceInfo = PieceGrid[nextPos.x, nextPos.y];
 
         // If other piece exists on target position
-        if (otherPiece != null)
+        if (otherPieceInfo != null)
         {
-            AttackPiece(thisPiece, otherPiece);
+            AttackPiece(thisPieceInfo, otherPieceInfo);
 
             // Check if piece is still alive
-            if (thisPiece.IsAlive)
+            if (thisPieceInfo.IsAlive)
                 PlacePiece(move);
         }
         else
@@ -218,37 +235,20 @@ public class Board
 
     private void UpdatePiecePosition(MoveInfo move)
     {
-        move.Piece.BoardPosition = move.TargetPosition;
+        move.PieceInfo.BoardPosition = move.NewPosition;
     }
 
     private void UpdateGridArray(MoveInfo move)
     {
-        BoardPosition lastPos = move.Piece.BoardPosition;
-        BoardPosition nextPos = move.TargetPosition;
+        BoardPosition lastPos = move.PieceInfo.BoardPosition;
+        BoardPosition nextPos = move.NewPosition;
 
         if (IsPositionInsideGrid(lastPos))
             PieceGrid[lastPos.x, lastPos.y] = null;
-        PieceGrid[nextPos.x, nextPos.y] = move.Piece;
+        PieceGrid[nextPos.x, nextPos.y] = move.PieceInfo;
     }
 
-    public List<MoveInfo> GetAllValidMoves(Side side)
-    {
-        List<MoveInfo> allPossibleMoves = new List<MoveInfo>();
-        PieceContainer pieces = side == Side.A ? PiecesA : PiecesB;
-
-        foreach (PieceInfo piece in pieces.ActivePieces)
-            foreach (MoveInfo move in GetPieceValidMoves(piece))
-                allPossibleMoves.Add(move);
-
-        return allPossibleMoves;
-    }
-
-    public PieceContainer GetPieceContainer(Side side)
-    {
-        return side == Side.A ? PiecesA : PiecesB;
-    }
-
-    public List<MoveInfo> GetPieceValidMoves(PieceInfo piece)
+    private List<MoveInfo> GetPieceValidMoves(PieceInfo piece)
     {
         List<MoveInfo> moves = new List<MoveInfo>();
 
@@ -266,10 +266,10 @@ public class Board
         return moves;
     }
 
-    public bool IsValidMove(MoveInfo move)
+    private bool IsValidMove(MoveInfo move)
     {
-        PieceInfo thisPiece = move.Piece;
-        BoardPosition targetPos = move.TargetPosition;
+        PieceInfo thisPiece = move.PieceInfo;
+        BoardPosition targetPos = move.NewPosition;
 
         if (!IsPositionInsideGrid(targetPos))
             return false;
@@ -288,7 +288,7 @@ public class Board
         return false;
     }
 
-    public bool IsPositionInsideGrid(BoardPosition pos)
+    private bool IsPositionInsideGrid(BoardPosition pos)
     {
         return !(pos.x < 0 || pos.y < 0 || pos.x >= WIDTH || pos.y >= HEIGHT);
     }
