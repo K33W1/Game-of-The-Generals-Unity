@@ -12,7 +12,7 @@
         else if (thisRank == PieceRank.Private && otherRank == PieceRank.Spy)
             return Side.A;
         else if (thisRank == otherRank) // Same ranks
-            return Side.Invalid;
+            return Side.None;
         else if (thisRank < otherRank)
             return Side.A;
         else

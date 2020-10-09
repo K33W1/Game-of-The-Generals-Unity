@@ -7,7 +7,7 @@ public class PieceContainer
 
     public List<PieceInfo> ActivePieces { get; }
     public List<PieceInfo> InactivePieces { get; }
-    public PieceInfo Flag { get; private set; };
+    public PieceInfo Flag { get; private set; }
 
     public PieceContainer()
     {

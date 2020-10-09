@@ -8,7 +8,7 @@ public abstract class Actor : MonoBehaviour
     [SerializeField] protected GameManager gameManager = null;
 
     [Header("Settings")]
-    [SerializeField] protected Side side = Side.Invalid;
+    [SerializeField] protected Side side = Side.None;
     [SerializeField] private int minSpawnHeight = 0;
     [SerializeField] private int maxSpawnHeight = 2;
 

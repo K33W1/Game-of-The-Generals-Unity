@@ -10,15 +10,24 @@ public class Board
     public readonly PieceContainer PiecesA = null;
     public readonly PieceContainer PiecesB = null;
 
+    public BoardChange? BoardChange { get; private set; }
+
     public GamePhase CurrentGamePhase { get; private set; } = GamePhase.Spawn;
     public GameOutput CurrentGameOutput { get; private set; } = GameOutput.None;
-    public Side CurrentSide { get; private set; } = Side.Invalid;
+    public Side CurrentSide { get; private set; } = Side.None;
 
-    public Board(PieceInfo[,] pieceGrid, PieceContainer piecesA, PieceContainer piecesB, GamePhase currentGamePhase, GameOutput currentGameOutput, Side currentSide)
+    public Board(PieceInfo[,] pieceGrid,
+                 PieceContainer piecesA,
+                 PieceContainer piecesB,
+                 BoardChange? boardChange,
+                 GamePhase currentGamePhase,
+                 GameOutput currentGameOutput,
+                 Side currentSide)
     {
         PieceGrid = pieceGrid;
         PiecesA = piecesA;
         PiecesB = piecesB;
+        BoardChange = boardChange;
         CurrentGamePhase = currentGamePhase;
         CurrentGameOutput = currentGameOutput;
         CurrentSide = currentSide;
@@ -30,15 +39,20 @@ public class Board
         PieceInfo[,] pieceGrid = new PieceInfo[WIDTH, HEIGHT];
         PieceContainer piecesA = PiecesA.Copy();
         PieceContainer piecesB = PiecesB.Copy();
-        GamePhase gamePhase = CurrentGamePhase;
-        GameOutput gameOutput = CurrentGameOutput;
-        Side side = CurrentSide;
 
+        // Copy grid
         for (int i = 0; i < WIDTH; i++)
             for (int j = 0; j < HEIGHT; j++)
                 pieceGrid[i, j] = PieceGrid[i, j]?.Copy();
 
-        return new Board(pieceGrid, piecesA, piecesB, gamePhase, gameOutput, side);
+        return new Board(
+            pieceGrid,
+            piecesA,
+            piecesB,
+            BoardChange,
+            CurrentGamePhase,
+            CurrentGameOutput,
+            CurrentSide);
     }
 
     public List<MoveInfo> GetAllValidMoves(Side side)
@@ -120,10 +134,38 @@ public class Board
         return false;
     }
 
+    public GameOutput CheckGameEnd()
+    {
+        PieceInfo flagA = PiecesA.Flag;
+        PieceInfo flagB = PiecesB.Flag;
+
+        if (!flagA.IsAlive)
+        {
+            return GameOutput.B;
+        }
+        else if (!flagB.IsAlive)
+        {
+            return GameOutput.A;
+        }
+        else
+        {
+            if (CurrentSide == Side.B && flagA.BoardPosition.y == HEIGHT - 1)
+                return GameOutput.A;
+            else if (CurrentSide == Side.A && flagB.BoardPosition.y == 0)
+                return GameOutput.B;
+        }
+
+        return GameOutput.None;
+    }
+
     public bool MovePiece(MoveInfo move)
     {
-        if (TryMovePiece(move))
+        BoardChange? boardChange = TryMovePiece(move);
+
+        if (boardChange.HasValue)
         {
+            BoardChange = boardChange.Value;
+
             // Check if someone won
             GameOutput gameOutput = CheckGameEnd();
             if (gameOutput != GameOutput.None)
@@ -149,46 +191,23 @@ public class Board
         return false;
     }
 
-    public GameOutput CheckGameEnd()
-    {
-        PieceInfo flagA = PiecesA.Flag;
-        PieceInfo flagB = PiecesB.Flag;
-
-        if (!flagA.IsAlive)
-        {
-            return GameOutput.B;
-        }
-        else if (!flagB.IsAlive)
-        {
-            return GameOutput.A;
-        }
-        else
-        {
-            if (CurrentSide == Side.B && flagA.BoardPosition.y == HEIGHT - 1)
-                return GameOutput.A;
-            else if (CurrentSide == Side.A && flagB.BoardPosition.y == 0)
-                return GameOutput.B;
-        }
-
-        return GameOutput.None;
-    }
-
-    private bool TryMovePiece(MoveInfo move)
+    private BoardChange? TryMovePiece(MoveInfo move)
     {
         if (!IsValidMove(move))
-            return false;
+            return null;
 
+        BoardPosition newPos = move.NewPosition;
         PieceInfo thisPieceInfo = move.PieceInfo;
-        BoardPosition nextPos = move.NewPosition;
-        PieceInfo otherPieceInfo = PieceGrid[nextPos.x, nextPos.y];
+        PieceInfo otherPieceInfo = PieceGrid[newPos.x, newPos.y];
+        Side winningSide = Side.None;
 
         // If other piece exists on target position
         if (otherPieceInfo != null)
         {
-            AttackPiece(thisPieceInfo, otherPieceInfo);
+            winningSide = AttackPiece(thisPieceInfo, otherPieceInfo);
 
-            // Check if piece is still alive
-            if (thisPieceInfo.IsAlive)
+            // Check if attacking piece won the battle
+            if (winningSide == Side.A)
                 PlacePiece(move);
         }
         else
@@ -196,7 +215,7 @@ public class Board
             PlacePiece(move);
         }
 
-        return true;
+        return new BoardChange(move, otherPieceInfo, winningSide);
     }
 
     private void PlacePiece(MoveInfo move)
@@ -205,12 +224,12 @@ public class Board
         UpdatePiecePosition(move);
     }
 
-    private void AttackPiece(PieceInfo pieceA, PieceInfo pieceB)
+    private Side AttackPiece(PieceInfo pieceA, PieceInfo pieceB)
     {
         Side winningSide = GameRules.GetWinningSide(pieceA, pieceB);
 
         // Remove losing piece
-        if (winningSide != Side.Invalid)
+        if (winningSide != Side.None)
         {
             PieceInfo losingPiece = winningSide == Side.A ? pieceB : pieceA;
             KillPiece(losingPiece);
@@ -220,6 +239,8 @@ public class Board
             KillPiece(pieceA);
             KillPiece(pieceB);
         }
+
+        return winningSide;
     }
 
     private void KillPiece(PieceInfo piece)
@@ -235,7 +256,9 @@ public class Board
 
     private void UpdatePiecePosition(MoveInfo move)
     {
-        move.PieceInfo.BoardPosition = move.NewPosition;
+        PieceInfo pieceInfo = move.PieceInfo;
+        BoardPosition newPos = move.NewPosition;
+        pieceInfo.BoardPosition = newPos;
     }
 
     private void UpdateGridArray(MoveInfo move)

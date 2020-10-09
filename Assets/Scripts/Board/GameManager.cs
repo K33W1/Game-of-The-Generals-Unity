@@ -53,7 +53,14 @@ public class GameManager : MonoBehaviour
         }
 
         // Initialize board
-        Board = new Board(pieceGrid, piecesA, piecesB, startingGamePhase, startingGameOutput, startingSide);
+        Board = new Board(
+            pieceGrid,
+            piecesA,
+            piecesB,
+            null,
+            startingGamePhase,
+            startingGameOutput,
+            startingSide);
 
         // TODO: Configure which can spawn first
         actorA.PerformSpawn();
