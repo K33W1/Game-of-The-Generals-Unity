@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         // Board dependencies
-        PieceInfo[,] pieceGrid = new PieceInfo[Board.Width, Board.Height];
+        PieceInfo[,] pieceGrid = new PieceInfo[Board.WIDTH, Board.HEIGHT];
         PieceContainer piecesA = new PieceContainer();
         PieceContainer piecesB = new PieceContainer();
         GamePhase startingGamePhase = GamePhase.Spawn;

@@ -27,7 +27,7 @@ public abstract class Actor : MonoBehaviour
 
         // List all valid spawn positions
         List<BoardPosition> spawnPos = new List<BoardPosition>();
-        for (int i = 0; i < Board.Width; i++)
+        for (int i = 0; i < Board.WIDTH; i++)
             for (int j = minSpawnHeight; j <= maxSpawnHeight; j++)
                 spawnPos.Add(new BoardPosition(i, j));
 

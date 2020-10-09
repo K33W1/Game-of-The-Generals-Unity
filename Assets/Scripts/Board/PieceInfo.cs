@@ -15,11 +15,16 @@ public class PieceInfo
     public PieceRank Rank => rank;
     public Side Side => side;
 
-    public PieceInfo(PieceRank rank, Side side)
+    public PieceInfo(BoardPosition boardPosition, bool isAlive, PieceRank rank, Side side)
     {
-        BoardPosition = new BoardPosition(-1, -1);
-        IsAlive = true;
+        this.boardPosition = boardPosition;
+        this.isAlive = isAlive;
         this.rank = rank;
         this.side = side;
+    }
+
+    public PieceInfo Copy()
+    {
+        return new PieceInfo(boardPosition, isAlive, rank, side);
     }
 }

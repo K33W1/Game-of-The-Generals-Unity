@@ -3,14 +3,35 @@ using UnityEngine;
 
 public class PieceContainer
 {
-    public PieceContainer()
-    {
-        ActivePieces = new List<PieceInfo>();
-        InactivePieces = new List<PieceInfo>();
-    }
+    private const int MAX_CAPACITY = 21;
 
     public List<PieceInfo> ActivePieces { get; }
     public List<PieceInfo> InactivePieces { get; }
+
+    public PieceContainer()
+    {
+        ActivePieces = new List<PieceInfo>(MAX_CAPACITY);
+        InactivePieces = new List<PieceInfo>(MAX_CAPACITY);
+    }
+
+    public PieceContainer(List<PieceInfo> activePieces, List<PieceInfo> inactivePieces)
+    {
+        ActivePieces = activePieces;
+        InactivePieces = inactivePieces;
+    }
+
+    public PieceContainer Copy()
+    {
+        List<PieceInfo> activePieces = new List<PieceInfo>(MAX_CAPACITY);
+        List<PieceInfo> inactivePieces = new List<PieceInfo>(MAX_CAPACITY);
+
+        for (int i = 0; i < ActivePieces.Count; i++)
+            activePieces.Add(ActivePieces[i].Copy());
+        for (int i = 0; i < InactivePieces.Count; i++)
+            inactivePieces.Add(InactivePieces[i].Copy());
+
+        return new PieceContainer(activePieces, inactivePieces);
+    }
 
     public PieceInfo GetPiece(PieceRank rank)
     {

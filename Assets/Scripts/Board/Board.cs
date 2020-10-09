@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class Board
 {
-    public const int Width = 9;
-    public const int Height = 8;
+    public const int WIDTH = 9;
+    public const int HEIGHT = 8;
 
     public readonly PieceInfo[,] PieceGrid = null;
     public readonly PieceContainer PiecesA = null;
@@ -24,13 +24,30 @@ public class Board
         CurrentSide = currentSide;
     }
 
+    public Board Copy()
+    {
+        // Board dependencies
+        PieceInfo[,] pieceGrid = new PieceInfo[WIDTH, HEIGHT];
+        PieceContainer piecesA = PiecesA.Copy();
+        PieceContainer piecesB = PiecesB.Copy();
+        GamePhase gamePhase = CurrentGamePhase;
+        GameOutput gameOutput = CurrentGameOutput;
+        Side side = CurrentSide;
+
+        for (int i = 0; i < WIDTH; i++)
+            for (int j = 0; j < HEIGHT; j++)
+                pieceGrid[i, j] = PieceGrid[i, j]?.Copy();
+
+        return new Board(pieceGrid, piecesA, piecesB, gamePhase, gameOutput, side);
+    }
+
     public bool SpawnPiece(MoveInfo move)
     {
         BoardPosition pos = move.TargetPosition;
 
         if (CurrentSide == Side.A)
         {
-            if (pos.x >= 0 && pos.x < Width && pos.y >= 0 && pos.y <= 2)
+            if (pos.x >= 0 && pos.x < WIDTH && pos.y >= 0 && pos.y <= 2)
             {
                 PlacePiece(move);
                 PiecesA.ActivatePiece(move.Piece);
@@ -40,7 +57,7 @@ public class Board
         }
         else
         {
-            if (pos.x >= 0 && pos.x < Width && pos.y >= 5 && pos.y <= 7)
+            if (pos.x >= 0 && pos.x < WIDTH && pos.y >= 5 && pos.y <= 7)
             {
                 PlacePiece(move);
                 PiecesB.ActivatePiece(move.Piece);
@@ -130,7 +147,7 @@ public class Board
         }
         else
         {
-            if (CurrentSide == Side.B && flagA.BoardPosition.y == Height - 1)
+            if (CurrentSide == Side.B && flagA.BoardPosition.y == HEIGHT - 1)
                 return GameOutput.A;
             else if (CurrentSide == Side.A && flagB.BoardPosition.y == 0)
                 return GameOutput.B;
@@ -273,6 +290,6 @@ public class Board
 
     public bool IsPositionInsideGrid(BoardPosition pos)
     {
-        return !(pos.x < 0 || pos.y < 0 || pos.x >= Width || pos.y >= Height);
+        return !(pos.x < 0 || pos.y < 0 || pos.x >= WIDTH || pos.y >= HEIGHT);
     }
 }
