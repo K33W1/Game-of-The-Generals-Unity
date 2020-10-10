@@ -66,7 +66,7 @@ public class GameManager : MonoBehaviour
         actorA.PerformSpawn();
     }
 
-    public void SpawnPiece(MoveInfo move)
+    public void SpawnPiece(in MoveInfo move)
     {
         if (Board.SpawnPiece(move))
         {
@@ -103,7 +103,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void MovePiece(MoveInfo move)
+    public void MovePiece(in MoveInfo move)
     {
         if (Board.MovePiece(move))
         {
@@ -144,13 +144,13 @@ public class GameManager : MonoBehaviour
     }
 
     #region Helpers
-    public BoardPosition GetWorldToCell(Vector3 worldPos)
+    public BoardPosition GetWorldToCell(in Vector3 worldPos)
     {
         Vector3Int cellPos = grid.WorldToCell(worldPos);
         return new BoardPosition(cellPos.x, cellPos.y);
     }
 
-    private Vector3 GetCellToWorld(BoardPosition pos)
+    private Vector3 GetCellToWorld(in BoardPosition pos)
     {
         return grid.GetCellCenterWorld(new Vector3Int(pos.x, pos.y, 0));
     }

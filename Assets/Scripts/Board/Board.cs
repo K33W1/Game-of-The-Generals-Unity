@@ -83,7 +83,7 @@ public class Board
         return side == Side.A ? PiecesA : PiecesB;
     }
 
-    public bool SpawnPiece(MoveInfo move)
+    public bool SpawnPiece(in MoveInfo move)
     {
         BoardPosition pos = move.NewPosition;
 
@@ -145,7 +145,7 @@ public class Board
         return false;
     }
 
-    public bool MovePiece(MoveInfo move)
+    public bool MovePiece(in MoveInfo move)
     {
         BoardChange? boardChange = TryMovePiece(move);
 
@@ -179,7 +179,7 @@ public class Board
         return false;
     }
 
-    private BoardChange? TryMovePiece(MoveInfo move)
+    private BoardChange? TryMovePiece(in MoveInfo move)
     {
         if (!IsValidMove(move))
         {
@@ -209,7 +209,7 @@ public class Board
         return new BoardChange(move, otherPieceInfo, winningSide);
     }
 
-    private void PlacePiece(MoveInfo move)
+    private void PlacePiece(in MoveInfo move)
     {
         UpdateGridArray(move);
         UpdatePiecePosition(move);
@@ -269,14 +269,14 @@ public class Board
         return GameOutput.None;
     }
 
-    private void UpdatePiecePosition(MoveInfo move)
+    private void UpdatePiecePosition(in MoveInfo move)
     {
         PieceInfo pieceInfo = move.PieceInfo;
         BoardPosition newPos = move.NewPosition;
         pieceInfo.BoardPosition = newPos;
     }
 
-    private void UpdateGridArray(MoveInfo move)
+    private void UpdateGridArray(in MoveInfo move)
     {
         BoardPosition oldPos = move.OldPosition;
         BoardPosition newPos = move.NewPosition;
@@ -305,7 +305,7 @@ public class Board
         return moves;
     }
 
-    private bool IsValidMove(MoveInfo move)
+    private bool IsValidMove(in MoveInfo move)
     {
         PieceInfo thisPiece = move.PieceInfo;
         BoardPosition oldPos = move.OldPosition;
@@ -328,7 +328,7 @@ public class Board
         return false;
     }
 
-    private bool IsPositionInsideGrid(BoardPosition pos)
+    private bool IsPositionInsideGrid(in BoardPosition pos)
     {
         return !(pos.x < 0 || pos.y < 0 || pos.x >= WIDTH || pos.y >= HEIGHT);
     }
