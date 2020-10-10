@@ -36,17 +36,12 @@ public class PieceContainer : IEnumerable<PieceInfo>, ICopyable<PieceContainer>
         PieceInfo flag = null;
 
         for (int i = 0; i < ActivePieces.Count; i++)
-        {
-            PieceInfo newPiece = ActivePieces[i].Copy();
-
-            activePieces.Add(newPiece);
-
-            if (newPiece.Rank == PieceRank.Flag)
-                flag = newPiece;
-        }
+            activePieces.Add(ActivePieces[i].Copy());
 
         for (int i = 0; i < InactivePieces.Count; i++)
             inactivePieces.Add(InactivePieces[i].Copy());
+
+        flag = activePieces.Find(piece => piece.Rank == PieceRank.Flag);
 
         return new PieceContainer(activePieces, inactivePieces, flag);
     }

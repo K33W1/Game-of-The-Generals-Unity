@@ -47,7 +47,7 @@ public class EnemyAI : Actor
             Fraction result = results[i];
 
             // Explore this move a set number of times
-            for (int j = 0; j < 100; j++)
+            for (int j = 0; j < 50; j++)
             {
                 Board boardCopy = board.GetCopyWithHiddenPieces(side);
 

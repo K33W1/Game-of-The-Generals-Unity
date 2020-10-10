@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Extensions
 {
     public static class IListExtensions
     {
-        private static readonly Random random = new Random();
-
         public static void Shuffle<T>(this IList<T> list)
         {
             for (int i = 0; i < list.Count; i++)
             {
-                int j = random.Next(0, i);
+                int j = Random.Range(0, i + 1);
                 T value = list[j];
                 list[j] = list[i];
                 list[i] = value;

@@ -68,7 +68,7 @@ public class Board
 
     public List<MoveInfo> GetAllValidMoves()
     {
-        List<MoveInfo> allPossibleMoves = new List<MoveInfo>();
+        List<MoveInfo> allPossibleMoves = new List<MoveInfo>(PieceContainer.MAX_CAPACITY * 4);
         PieceContainer pieces = CurrentSide == Side.A ? PiecesA : PiecesB;
 
         foreach (PieceInfo piece in pieces.ActivePieces)
@@ -278,18 +278,18 @@ public class Board
 
     private void UpdateGridArray(MoveInfo move)
     {
-        BoardPosition lastPos = move.PieceInfo.BoardPosition;
-        BoardPosition nextPos = move.NewPosition;
+        BoardPosition oldPos = move.OldPosition;
+        BoardPosition newPos = move.NewPosition;
 
-        if (IsPositionInsideGrid(lastPos))
-            PieceGrid[lastPos.x, lastPos.y] = null;
+        if (IsPositionInsideGrid(oldPos))
+            PieceGrid[oldPos.x, oldPos.y] = null;
 
-        PieceGrid[nextPos.x, nextPos.y] = move.PieceInfo;
+        PieceGrid[newPos.x, newPos.y] = move.PieceInfo;
     }
 
     private List<MoveInfo> GetPieceValidMoves(PieceInfo piece)
     {
-        List<MoveInfo> moves = new List<MoveInfo>();
+        List<MoveInfo> moves = new List<MoveInfo>(4);
 
         BoardPosition origin = piece.BoardPosition;
         MoveInfo moveUp = new MoveInfo(piece, origin.Up);
@@ -308,15 +308,16 @@ public class Board
     private bool IsValidMove(MoveInfo move)
     {
         PieceInfo thisPiece = move.PieceInfo;
-        BoardPosition targetPos = move.NewPosition;
+        BoardPosition oldPos = move.OldPosition;
+        BoardPosition newPos = move.NewPosition;
 
-        if (!IsPositionInsideGrid(targetPos))
+        if (!IsPositionInsideGrid(newPos))
             return false;
 
-        if (!thisPiece.BoardPosition.IsPositionAdjacent(targetPos))
+        if (!oldPos.IsPositionAdjacent(newPos))
             return false;
 
-        PieceInfo otherPiece = PieceGrid[targetPos.x, targetPos.y];
+        PieceInfo otherPiece = PieceGrid[newPos.x, newPos.y];
 
         if (otherPiece == null)
             return true;
