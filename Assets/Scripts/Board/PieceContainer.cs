@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using Extensions;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PieceContainer : IEnumerable<PieceInfo>
+public class PieceContainer : IEnumerable<PieceInfo>, ICopyable<PieceContainer>
 {
     public const int MAX_CAPACITY = 21;
 
@@ -90,10 +91,7 @@ public class PieceContainer : IEnumerable<PieceInfo>
 
     public bool IsValidSpawn()
     {
-        if (InactivePieces.Count > 0)
-            return false;
-
-        return true;
+        return InactivePieces.Count == 0;
     }
 
     public void ToggleVisibility()

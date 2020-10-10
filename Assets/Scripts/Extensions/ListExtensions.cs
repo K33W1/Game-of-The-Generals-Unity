@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-public static class ListExtensions
+namespace Extensions
 {
-    private static readonly Random random = new Random();
-    
-    public static void Shuffle<T>(this List<T> list)
+    public static class ListExtensions
     {
-        for (int i = 0; i < list.Count; i++)
+        public static List<T> Copy<T>(this List<T> list) where T : ICopyable<T>
         {
-            int j = random.Next(0, i);
-            T value = list[j];
-            list[j] = list[i];
-            list[i] = value;
+            List<T> newList = new List<T>(list.Count);
+            for (int i = 0; i < list.Count; i++)
+                newList[i] = list[i].Copy();
+            return newList;
         }
     }
 }

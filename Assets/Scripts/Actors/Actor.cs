@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Extensions;
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Actor : MonoBehaviour

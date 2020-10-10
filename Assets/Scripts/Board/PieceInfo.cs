@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Extensions;
+using System;
 using UnityEngine;
 
 [Serializable]
-public class PieceInfo
+public class PieceInfo : ICopyable<PieceInfo>
 {
     [Header("Settings")]
     [SerializeField] private BoardPosition boardPosition;

@@ -46,6 +46,11 @@ public class Board
             BoardPosition pos = pieceInfo.BoardPosition;
             pieceGrid[pos.x, pos.y] = pieceInfo;
         }
+        foreach (PieceInfo pieceInfo in piecesB)
+        {
+            BoardPosition pos = pieceInfo.BoardPosition;
+            pieceGrid[pos.x, pos.y] = pieceInfo;
+        }
 
         // Hide ranks
         foreach (PieceInfo pieceInfo in side == Side.A ? piecesB : piecesA)
@@ -278,6 +283,7 @@ public class Board
 
         if (IsPositionInsideGrid(lastPos))
             PieceGrid[lastPos.x, lastPos.y] = null;
+
         PieceGrid[nextPos.x, nextPos.y] = move.PieceInfo;
     }
 
