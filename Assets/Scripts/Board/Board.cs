@@ -40,13 +40,13 @@ public class Board
         PieceContainer piecesA = PiecesA.Copy();
         PieceContainer piecesB = PiecesB.Copy();
 
-        // Place pieces back into grid
-        foreach (PieceInfo pieceInfo in piecesA)
+        // Place alive pieces back into grid
+        foreach (PieceInfo pieceInfo in piecesA.ActivePieces)
         {
             BoardPosition pos = pieceInfo.BoardPosition;
             pieceGrid[pos.x, pos.y] = pieceInfo;
         }
-        foreach (PieceInfo pieceInfo in piecesB)
+        foreach (PieceInfo pieceInfo in piecesB.ActivePieces)
         {
             BoardPosition pos = pieceInfo.BoardPosition;
             pieceGrid[pos.x, pos.y] = pieceInfo;

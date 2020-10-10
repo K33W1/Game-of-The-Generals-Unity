@@ -88,7 +88,8 @@ public class EnemyAI : Actor
                 while(boardCopy.CurrentGameOutput == GameOutput.None)
                 {
                     List<MoveInfo> currentValidMoves = boardCopy.GetAllValidMoves();
-                    boardCopy.MovePiece(currentValidMoves[Random.Range(0, currentValidMoves.Count)]);
+                    int randomIndex = Random.Range(0, currentValidMoves.Count);
+                    boardCopy.MovePiece(currentValidMoves[randomIndex]);
                 }
 
                 // Update result
