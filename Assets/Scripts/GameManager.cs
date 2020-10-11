@@ -11,10 +11,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Actor actorB = null;
 
     public event Action<GamePhase> GamePhaseChanged;
+    public event Action<GameOutput> GameEnded;
 
-    public Board Board { get; private set; } = null;
     public Dictionary<PieceInfo, Piece> pieceInfoMap = new Dictionary<PieceInfo, Piece>();
 
+    private Board Board = null;
     private Grid grid = null;
 
     private void Awake()

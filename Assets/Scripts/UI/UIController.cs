@@ -12,6 +12,7 @@ public class UIController : MonoBehaviour
     private void Awake()
     {
         gameManager.GamePhaseChanged += OnGamePhaseChanged;
+        gameManager.GameEnded += OnGameEnd;
     }
 
     private void Start()
@@ -31,7 +32,10 @@ public class UIController : MonoBehaviour
             mainUI.SetActive(true);
         else if (newGamePhase == GamePhase.Spawn)
             spawningUI.SetActive(true);
-        else
-            endView.Enter(gameManager.Board.CurrentGameOutput);
+    }
+
+    private void OnGameEnd(GameOutput gameOutput)
+    {
+        endView.Enter(gameOutput);
     }
 }
