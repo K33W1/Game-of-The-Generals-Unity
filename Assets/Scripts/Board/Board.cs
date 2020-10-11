@@ -37,8 +37,8 @@ public class Board
     {
         // Board dependencies
         PieceInfo[,] pieceGrid = new PieceInfo[WIDTH, HEIGHT];
-        PieceContainer piecesA = side == Side.A ? PiecesA.Copy() : PiecesA.CopyWithHiddenPieces();
-        PieceContainer piecesB = side == Side.A ? PiecesB.CopyWithHiddenPieces() : PiecesB.Copy();
+        PieceContainer piecesA = side == Side.A ? PiecesA.DeepCopy() : PiecesA.DeepCopyWithHiddenPieces();
+        PieceContainer piecesB = side == Side.A ? PiecesB.DeepCopyWithHiddenPieces() : PiecesB.DeepCopy();
 
         // Place alive pieces back into grid
         foreach (PieceInfo pieceInfo in piecesA.ActivePieces)
@@ -64,7 +64,7 @@ public class Board
 
     public List<MoveInfo> GetAllValidMoves()
     {
-        List<MoveInfo> allPossibleMoves = new List<MoveInfo>(PieceContainer.MAX_CAPACITY * 4);
+        List<MoveInfo> allPossibleMoves = new List<MoveInfo>();
         PieceContainer pieces = CurrentSide == Side.A ? PiecesA : PiecesB;
 
         foreach (PieceInfo piece in pieces.ActivePieces)

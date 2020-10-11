@@ -3,52 +3,57 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PieceContainer : IEnumerable<PieceInfo>, ICopyable<PieceContainer>
+public class PieceContainer : IEnumerable<PieceInfo>, IDeepCopyable<PieceContainer>
 {
     public const int MAX_CAPACITY = 21;
 
+    public List<PieceInfo> AllPieces { get; }
     public List<PieceInfo> ActivePieces { get; }
     public List<PieceInfo> InactivePieces { get; }
-    public PieceInfo Flag { get; private set; }
+    public PieceInfo Flag { get; }
 
-    public PieceContainer()
+    public PieceContainer(List<PieceInfo> allPieces)
     {
-        ActivePieces = new List<PieceInfo>(21);
-        InactivePieces = new List<PieceInfo>(21);
-        Flag = null;
-    }
+        Debug.Assert(allPieces.Capacity == MAX_CAPACITY);
 
-    public PieceContainer(List<PieceInfo> activePieces, List<PieceInfo> inactivePieces, PieceInfo flag)
+        AllPieces = allPieces;
+        ActivePieces = new List<PieceInfo>(MAX_CAPACITY);
+        InactivePieces = new List<PieceInfo>(MAX_CAPACITY);
+        Flag = allPieces.Find(pieceInfo => pieceInfo.Rank == PieceRank.Flag);
+
+        foreach (PieceInfo pieceInfo in allPieces)
+        {
+            if (pieceInfo.IsAlive)
+                ActivePieces.Add(pieceInfo);
+            else
+                InactivePieces.Add(pieceInfo);
+        }
+    }
+    
+    public PieceContainer(List<PieceInfo> allPieces, List<PieceInfo> activePieces, List<PieceInfo> inactivePieces, PieceInfo flag)
     {
         Debug.Assert(activePieces.Capacity == MAX_CAPACITY);
         Debug.Assert(inactivePieces.Capacity == MAX_CAPACITY);
         Debug.Assert(flag != null);
 
+        AllPieces = allPieces;
         ActivePieces = activePieces;
         InactivePieces = inactivePieces;
         Flag = flag;
     }
 
-    public PieceContainer Copy()
+    public PieceContainer DeepCopy()
     {
-        List<PieceInfo> activePieces = new List<PieceInfo>(MAX_CAPACITY);
-        List<PieceInfo> inactivePieces = new List<PieceInfo>(MAX_CAPACITY);
-        PieceInfo flag = null;
-
-        for (int i = 0; i < ActivePieces.Count; i++)
-            activePieces.Add(ActivePieces[i].Copy());
-
-        for (int i = 0; i < InactivePieces.Count; i++)
-            inactivePieces.Add(InactivePieces[i].Copy());
-
-        flag = activePieces.Find(piece => piece.Rank == PieceRank.Flag);
-
-        return new PieceContainer(activePieces, inactivePieces, flag);
+        List<PieceInfo> allPieces = AllPieces;
+        List<PieceInfo> activePieces = ActivePieces.DeepCopy();
+        List<PieceInfo> inactivePieces = InactivePieces.DeepCopy();
+        PieceInfo flag = activePieces.Find(piece => piece.Rank == PieceRank.Flag);
+        return new PieceContainer(allPieces, activePieces, inactivePieces, flag);
     }
 
-    public PieceContainer CopyWithHiddenPieces()
+    public PieceContainer DeepCopyWithHiddenPieces()
     {
-        PieceContainer newPieceContainer = Copy();
+        PieceContainer newPieceContainer = DeepCopy();
 
         foreach (PieceInfo pieceInfo in newPieceContainer)
             pieceInfo.Rank = PieceRank.Invalid;
@@ -58,18 +63,9 @@ public class PieceContainer : IEnumerable<PieceInfo>, ICopyable<PieceContainer>
 
     public PieceInfo this[int i]
     {
+        // TODO: replace get with AllPieces[i];
         get => i < ActivePieces.Count ? ActivePieces[i] : InactivePieces[i - ActivePieces.Count];
         set => this[i] = value;
-    }
-
-    public void Add(PieceInfo pieceInfo)
-    {
-        InactivePieces.Add(pieceInfo);
-        
-        if (pieceInfo.Rank == PieceRank.Flag)
-            Flag = pieceInfo;
-
-        Debug.Assert(InactivePieces.Count + ActivePieces.Count <= MAX_CAPACITY);
     }
 
     public void ActivatePiece(PieceInfo piece)

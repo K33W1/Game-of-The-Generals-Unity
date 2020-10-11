@@ -28,9 +28,6 @@
 
     public PieceInfo GetWinningPiece()
     {
-        if (AttackWinningSide == Side.A)
-            return PieceMoved;
-
-        return PieceAttacked;
+        return AttackWinningSide == Side.A ? PieceMoved : PieceAttacked;
     }
 }

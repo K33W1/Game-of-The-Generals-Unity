@@ -6,7 +6,6 @@ using Random = UnityEngine.Random;
 [DisallowMultipleComponent]
 public class EnemyAI : Actor
 {
-    private PieceContainer otherPieces = null;
     private bool isThinking = false;
 
     public override void PerformSpawn()
@@ -21,11 +20,6 @@ public class EnemyAI : Actor
         gameManager.ConfirmSpawn();
 
         isThinking = false;
-    }
-
-    public override void InitializeEnemyInfo(PieceContainer otherPieces)
-    {
-        this.otherPieces = otherPieces;
     }
 
     public override void PerformMove()

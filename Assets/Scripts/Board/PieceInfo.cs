@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class PieceInfo : ICopyable<PieceInfo>
+public class PieceInfo : IDeepCopyable<PieceInfo>
 {
     [Header("Settings")]
     [SerializeField] private BoardPosition boardPosition;
@@ -18,13 +18,16 @@ public class PieceInfo : ICopyable<PieceInfo>
 
     public PieceInfo(BoardPosition boardPosition, bool isAlive, PieceRank rank, Side side)
     {
+        Debug.Assert(rank != PieceRank.Invalid);
+        Debug.Assert(side != Side.None);
+
         this.boardPosition = boardPosition;
         this.isAlive = isAlive;
         this.rank = rank;
         this.side = side;
     }
 
-    public PieceInfo Copy()
+    public PieceInfo DeepCopy()
     {
         return new PieceInfo(boardPosition, isAlive, rank, side);
     }

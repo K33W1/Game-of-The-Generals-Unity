@@ -24,13 +24,9 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        // Board dependencies
-        PieceInfo[,] pieceGrid = new PieceInfo[Board.WIDTH, Board.HEIGHT];
-        PieceContainer piecesA = new PieceContainer();
-        PieceContainer piecesB = new PieceContainer();
-        GamePhase startingGamePhase = GamePhase.Spawn;
-        GameOutput startingGameOutput = GameOutput.None;
-        Side startingSide = Side.A;
+        // PieceContainer dependencies
+        List<PieceInfo> piecesA = new List<PieceInfo>(PieceContainer.MAX_CAPACITY);
+        List<PieceInfo> piecesB = new List<PieceInfo>(PieceContainer.MAX_CAPACITY);
 
         // Get the piece gameobjects
         foreach (Piece piece in FindObjectsOfType<Piece>())
@@ -52,19 +48,27 @@ public class GameManager : MonoBehaviour
             }
         }
 
+        // Board dependencies
+        PieceInfo[,] pieceGrid = new PieceInfo[Board.WIDTH, Board.HEIGHT];
+        PieceContainer pieceContainerA = new PieceContainer(piecesA);
+        PieceContainer pieceContainerB = new PieceContainer(piecesB);
+        GamePhase startingGamePhase = GamePhase.Spawn;
+        GameOutput startingGameOutput = GameOutput.None;
+        Side startingSide = Side.A;
+
         // Initialize board
         Board = new Board(
             pieceGrid,
-            piecesA,
-            piecesB,
+            pieceContainerA,
+            pieceContainerB,
             null,
             startingGamePhase,
             startingGameOutput,
             startingSide);
 
         // Initialize actors
-        actorA.Initialize(this, Board);
-        actorB.Initialize(this, Board);
+        actorA.Initialize(this, Board, pieceContainerA, pieceContainerB);
+        actorB.Initialize(this, Board, pieceContainerB, pieceContainerA);
 
         // TODO: Configure which can spawn first
         actorA.PerformSpawn();
@@ -97,10 +101,6 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                // Initialize each other's pieces
-                actorA.InitializeEnemyInfo(Board.PiecesB);
-                actorB.InitializeEnemyInfo(Board.PiecesA);
-                
                 // Actor A first
                 actorA.PerformMove();
 

@@ -29,11 +29,6 @@ public class PlayerInput : Actor
         isCurrentSpawn = true;
     }
 
-    public override void InitializeEnemyInfo(PieceContainer otherPieces)
-    {
-        // Do nothing
-    }
-
     public override void PerformMove()
     {
         isCurrentTurn = true;
