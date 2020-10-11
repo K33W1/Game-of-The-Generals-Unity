@@ -13,10 +13,10 @@ public class GameManager : MonoBehaviour
     public event Action<GamePhase> GamePhaseChanged;
     public event Action<GameOutput> GameEnded;
 
-    public Dictionary<PieceInfo, Piece> pieceInfoMap = new Dictionary<PieceInfo, Piece>();
-
     private Board Board = null;
     private Grid grid = null;
+
+    private Dictionary<PieceInfo, Piece> pieceInfoMap = new Dictionary<PieceInfo, Piece>();
 
     private void Awake()
     {
@@ -144,6 +144,7 @@ public class GameManager : MonoBehaviour
     private void EndGame()
     {
         GamePhaseChanged.Invoke(GamePhase.End);
+        GameEnded.Invoke(Board.CurrentGameOutput);
     }
 
     private void UpdatePieceWorldPosition(PieceInfo pieceInfo)
