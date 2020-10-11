@@ -46,6 +46,16 @@ public class PieceContainer : IEnumerable<PieceInfo>, ICopyable<PieceContainer>
         return new PieceContainer(activePieces, inactivePieces, flag);
     }
 
+    public PieceContainer CopyWithHiddenPieces()
+    {
+        PieceContainer newPieceContainer = Copy();
+
+        foreach (PieceInfo pieceInfo in newPieceContainer)
+            pieceInfo.Rank = PieceRank.Invalid;
+
+        return newPieceContainer;
+    }
+
     public PieceInfo this[int i]
     {
         get => i < ActivePieces.Count ? ActivePieces[i] : InactivePieces[i - ActivePieces.Count];

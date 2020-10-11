@@ -4,21 +4,28 @@ using UnityEngine;
 
 public abstract class Actor : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] protected GameManager gameManager = null;
-
     [Header("Settings")]
     [SerializeField] protected Side side = Side.None;
     [SerializeField] private int minSpawnHeight = 0;
     [SerializeField] private int maxSpawnHeight = 2;
 
+    protected GameManager gameManager = null;
+    protected Board board = null;
+
+    public void Initialize(GameManager gameManager, Board board)
+    {
+        this.gameManager = gameManager;
+        this.board = board;
+    }
+
     public abstract void PerformSpawn();
+    public abstract void InitializeEnemyInfo(PieceContainer otherPieces);
     public abstract void PerformMove();
 
     public void RandomizeSpawns()
     {
         // Get all pieces
-        PieceContainer pieceContainer = gameManager.Board.GetPieceContainer(side);
+        PieceContainer pieceContainer = board.GetPieceContainer(side);
         List<PieceInfo> allPieces = new List<PieceInfo>();
         foreach (PieceInfo piece in pieceContainer.InactivePieces)
             allPieces.Add(piece);

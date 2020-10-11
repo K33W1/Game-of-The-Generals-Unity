@@ -1863,18 +1863,6 @@ PrefabInstance:
       propertyPath: pieceInfo.rank
       value: 3
       objectReference: {fileID: 0}
-    - target: {fileID: 6286871306571077222, guid: 1e4b312f4136f14499d0850c6cb5acdd, type: 3}
-      propertyPath: pieceInfo.boardPosition.x
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6286871306571077222, guid: 1e4b312f4136f14499d0850c6cb5acdd, type: 3}
-      propertyPath: pieceInfo.boardPosition.y
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6286871306571077222, guid: 1e4b312f4136f14499d0850c6cb5acdd, type: 3}
-      propertyPath: pieceInfo.isAlive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6286871306571077223, guid: 1e4b312f4136f14499d0850c6cb5acdd, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.5

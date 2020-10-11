@@ -37,8 +37,8 @@ public class Board
     {
         // Board dependencies
         PieceInfo[,] pieceGrid = new PieceInfo[WIDTH, HEIGHT];
-        PieceContainer piecesA = PiecesA.Copy();
-        PieceContainer piecesB = PiecesB.Copy();
+        PieceContainer piecesA = side == Side.A ? PiecesA.Copy() : PiecesA.CopyWithHiddenPieces();
+        PieceContainer piecesB = side == Side.A ? PiecesB.CopyWithHiddenPieces() : PiecesB.Copy();
 
         // Place alive pieces back into grid
         foreach (PieceInfo pieceInfo in piecesA.ActivePieces)
@@ -51,10 +51,6 @@ public class Board
             BoardPosition pos = pieceInfo.BoardPosition;
             pieceGrid[pos.x, pos.y] = pieceInfo;
         }
-
-        // Hide ranks
-        foreach (PieceInfo pieceInfo in side == Side.A ? piecesB : piecesA)
-            pieceInfo.Rank = PieceRank.Invalid;
 
         return new Board(
             pieceGrid,

@@ -62,6 +62,10 @@ public class GameManager : MonoBehaviour
             startingGameOutput,
             startingSide);
 
+        // Initialize actors
+        actorA.Initialize(this, Board);
+        actorB.Initialize(this, Board);
+
         // TODO: Configure which can spawn first
         actorA.PerformSpawn();
     }
@@ -93,8 +97,14 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                GamePhaseChanged.Invoke(GamePhase.Move);
+                // Initialize each other's pieces
+                actorA.InitializeEnemyInfo(Board.PiecesB);
+                actorB.InitializeEnemyInfo(Board.PiecesA);
+                
+                // Actor A first
                 actorA.PerformMove();
+
+                GamePhaseChanged.Invoke(GamePhase.Move);
             }
         }
         else
