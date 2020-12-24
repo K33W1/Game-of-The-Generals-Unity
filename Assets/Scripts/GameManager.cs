@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Actor actorB = null;
 
     public event Action<GamePhase> GamePhaseChanged;
-    public event Action<GameOutput> GameEnded;
+    public event Action<Side> GameEnded;
 
     private Board Board = null;
     private Grid grid = null;
@@ -54,7 +54,7 @@ public class GameManager : MonoBehaviour
         PieceContainer pieceContainerA = new PieceContainer(piecesA);
         PieceContainer pieceContainerB = new PieceContainer(piecesB);
         GamePhase startingGamePhase = GamePhase.Spawn;
-        GameOutput startingGameOutput = GameOutput.None;
+        Side startingGameOutput = Side.None;
         Side startingSide = Side.A;
 
         // Initialize board
@@ -120,7 +120,7 @@ public class GameManager : MonoBehaviour
         {
             UpdatePieceWorldPosition(move.PieceInfo);
 
-            if (Board.CurrentGameOutput != GameOutput.None)
+            if (Board.CurrentGameOutput != Side.None)
                 EndGame();
             else if (Board.CurrentSide == Side.A)
                 actorA.PerformMove();

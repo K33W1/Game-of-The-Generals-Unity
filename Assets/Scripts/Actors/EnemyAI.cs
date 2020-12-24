@@ -96,16 +96,11 @@ public class EnemyAI : Actor
         List<MoveInfo> allPossibleMoves = board.GetAllValidMoves();
         List<Fraction> results = new List<Fraction>(allPossibleMoves.Count);
 
-        // Add 0/0 fractional results
-        for (int i = 0; i < allPossibleMoves.Count; i++)
-        {
-            results.Add(new Fraction(0, 0));
-        }
-
         // Explore each move
         for (int i = 0; i < allPossibleMoves.Count; i++)
         {
-            Fraction result = results[i];
+            // Start with 0/0 fractional results
+            Fraction result = new Fraction(0, 0);
 
             // Explore this move a set number of times
             for (int j = 0; j < 2; j++)
@@ -117,7 +112,7 @@ public class EnemyAI : Actor
                 boardCopy.MovePiece(boardCopy.GetAllValidMoves()[i]);
 
                 // Play random moves until end game
-                while (boardCopy.CurrentGameOutput == GameOutput.None)
+                while (boardCopy.CurrentGameOutput == Side.None)
                 {
                     List<MoveInfo> currentValidMoves = boardCopy.GetAllValidMoves();
                     int randomIndex = Random.Range(0, currentValidMoves.Count);
@@ -125,8 +120,7 @@ public class EnemyAI : Actor
                 }
 
                 // Update result
-                // TODO: GameOutput and Side is just the same!
-                if (boardCopy.CurrentGameOutput == GameOutput.B)
+                if (boardCopy.CurrentGameOutput == Side.B)
                 {
                     result.Numerator++;
                 }
@@ -134,7 +128,7 @@ public class EnemyAI : Actor
                 result.Denominator++;
             }
 
-            results[i] = result;
+            results.Add(result);
         }
 
         // Find best move

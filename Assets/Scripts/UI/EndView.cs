@@ -6,11 +6,11 @@ public class EndView : MonoBehaviour
     [Header("References")]
     [SerializeField] private TextMeshProUGUI winnerText = null;
 
-    public void Enter(GameOutput gameOutput)
+    public void Enter(Side gameOutput)
     {
         gameObject.SetActive(true);
 
-        if (gameOutput == GameOutput.A)
+        if (gameOutput == Side.A)
             winnerText.text = "Player won!";
         else
             winnerText.text = "Enemy AI won!";

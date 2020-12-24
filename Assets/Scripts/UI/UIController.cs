@@ -34,7 +34,7 @@ public class UIController : MonoBehaviour
             spawningUI.SetActive(true);
     }
 
-    private void OnGameEnd(GameOutput gameOutput)
+    private void OnGameEnd(Side gameOutput)
     {
         endView.Enter(gameOutput);
     }

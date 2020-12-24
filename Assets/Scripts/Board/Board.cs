@@ -13,7 +13,7 @@ public class Board
     public BoardChange? BoardChange { get; private set; }
 
     public GamePhase CurrentGamePhase { get; private set; } = GamePhase.Spawn;
-    public GameOutput CurrentGameOutput { get; private set; } = GameOutput.None;
+    public Side CurrentGameOutput { get; private set; } = Side.None;
     public Side CurrentSide { get; private set; } = Side.None;
 
     public Board(PieceInfo[,] pieceGrid,
@@ -21,7 +21,7 @@ public class Board
                  PieceContainer piecesB,
                  BoardChange? boardChange,
                  GamePhase currentGamePhase,
-                 GameOutput currentGameOutput,
+                 Side currentGameOutput,
                  Side currentSide)
     {
         PieceGrid = pieceGrid;
@@ -150,8 +150,8 @@ public class Board
             BoardChange = boardChange.Value;
 
             // Check if someone won
-            GameOutput gameOutput = CheckGameEnd();
-            if (gameOutput != GameOutput.None)
+            Side gameOutput = CheckGameEnd();
+            if (gameOutput != Side.None)
             {
                 CurrentSide = Side.None;
                 CurrentGamePhase = GamePhase.End;
@@ -241,28 +241,28 @@ public class Board
             PiecesB.KillPiece(piece);
     }
 
-    private GameOutput CheckGameEnd()
+    private Side CheckGameEnd()
     {
         PieceInfo flagA = PiecesA.Flag;
         PieceInfo flagB = PiecesB.Flag;
 
         if (!flagA.IsAlive)
         {
-            return GameOutput.B;
+            return Side.B;
         }
         else if (!flagB.IsAlive)
         {
-            return GameOutput.A;
+            return Side.A;
         }
         else
         {
             if (CurrentSide == Side.B && flagA.BoardPosition.y == HEIGHT - 1)
-                return GameOutput.A;
+                return Side.A;
             else if (CurrentSide == Side.A && flagB.BoardPosition.y == 0)
-                return GameOutput.B;
+                return Side.B;
         }
 
-        return GameOutput.None;
+        return Side.None;
     }
 
     private void UpdatePiecePosition(in MoveInfo move)
