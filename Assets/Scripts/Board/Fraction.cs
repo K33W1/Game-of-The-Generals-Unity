@@ -1,4 +1,4 @@
-﻿public class Fraction
+﻿public struct Fraction
 {
     public int Numerator;
     public int Denominator;

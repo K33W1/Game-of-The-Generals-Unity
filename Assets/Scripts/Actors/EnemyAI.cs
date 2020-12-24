@@ -108,7 +108,7 @@ public class EnemyAI : Actor
             Fraction result = results[i];
 
             // Explore this move a set number of times
-            for (int j = 0; j < 1; j++)
+            for (int j = 0; j < 2; j++)
             {
                 Board boardCopy = board.GetCopyWithHiddenPieces(side);
 
@@ -133,6 +133,8 @@ public class EnemyAI : Actor
 
                 result.Denominator++;
             }
+
+            results[i] = result;
         }
 
         // Find best move
