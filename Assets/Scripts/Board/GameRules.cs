@@ -1,21 +1,18 @@
 ﻿public static class GameRules
 {
-    public static Side GetWinningSide(PieceInfo pieceA, PieceInfo pieceB)
+    public static Side GetWinningSide(PieceRank rankA, PieceRank rankB)
     {
-        PieceRank thisRank = pieceA.Rank;
-        PieceRank otherRank = pieceB.Rank;
-
-        if (thisRank == PieceRank.Flag && otherRank == PieceRank.Flag) // Flag to Flag
+        if (rankA == PieceRank.Flag && rankB == PieceRank.Flag) // Flag to Flag
             return Side.A;
-        else if (thisRank == PieceRank.Spy && otherRank == PieceRank.Private)
+        if (rankA == PieceRank.Spy && rankB == PieceRank.Private)
             return Side.B;
-        else if (thisRank == PieceRank.Private && otherRank == PieceRank.Spy)
+        if (rankA == PieceRank.Private && rankB == PieceRank.Spy)
             return Side.A;
-        else if (thisRank == otherRank) // Same ranks
+        if (rankA == rankB) // Same ranks
             return Side.None;
-        else if (thisRank < otherRank)
+        if (rankA < rankB)
             return Side.A;
-        else
-            return Side.B;
+
+        return Side.B;
     }
 }

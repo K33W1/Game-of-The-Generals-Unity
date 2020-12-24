@@ -23,11 +23,19 @@
 
     public bool WasThereAnAttack()
     {
-        return AttackWinningSide == Side.None;
+        return PieceAttacked != null;
     }
 
     public PieceInfo GetWinningPiece()
     {
+        if (AttackWinningSide == Side.None)
+            return null;
+        
         return AttackWinningSide == Side.A ? PieceMoved : PieceAttacked;
+    }
+
+    public PieceInfo GetPiece(Side side)
+    {
+        return PieceMoved.Side == side ? PieceMoved : PieceAttacked;
     }
 }

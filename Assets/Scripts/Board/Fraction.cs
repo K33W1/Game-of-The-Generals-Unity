@@ -11,6 +11,6 @@
 
     public float GetDecimal()
     {
-        return ((float)Numerator) / ((float)Denominator);
+        return (float)Numerator / Denominator;
     }
 }

@@ -14,7 +14,7 @@ public abstract class Actor : MonoBehaviour
     protected PieceContainer myPieces = null;
     protected PieceContainer otherPieces = null;
 
-    public void Initialize(GameManager gameManager, Board board, PieceContainer myPieces, PieceContainer otherPieces)
+    public virtual void Initialize(GameManager gameManager, Board board, PieceContainer myPieces, PieceContainer otherPieces)
     {
         this.gameManager = gameManager;
         this.board = board;

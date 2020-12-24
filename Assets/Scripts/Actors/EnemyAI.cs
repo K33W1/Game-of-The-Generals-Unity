@@ -6,7 +6,32 @@ using Random = UnityEngine.Random;
 [DisallowMultipleComponent]
 public class EnemyAI : Actor
 {
+    [SerializeField] private PieceCounterPanel pieceCounterPanel = null;
+
+    private readonly List<int> piecePool = new List<int>();
+    private readonly Dictionary<PieceInfo, RankPossibilities> enemyPiecesPossibilities =
+        new Dictionary<PieceInfo, RankPossibilities>();
     private bool isThinking = false;
+
+    public override void Initialize(
+        GameManager gameManager,
+        Board board,
+        PieceContainer myPieces,
+        PieceContainer otherPieces)
+    {
+        base.Initialize(gameManager, board, myPieces, otherPieces);
+
+        foreach (PieceInfo pieceInfo in otherPieces)
+        {
+            RankPossibilities rankPossibilities = new RankPossibilities(piecePool);
+            enemyPiecesPossibilities.Add(pieceInfo, rankPossibilities);
+        }
+
+        for (int i = 0; i < 15; i++)
+        {
+            piecePool.Add(21);
+        }
+    }
 
     public override void PerformSpawn()
     {
@@ -28,17 +53,42 @@ public class EnemyAI : Actor
         float startingTime = Time.realtimeSinceStartup;
 
         // Update info about enemy's pieces
-        Debug.Assert(board.BoardChange.HasValue);
-        BoardChange lastBoardChange = board.BoardChange.Value;
-
+        UpdateEnemyInfo(board.BoardChange.Value);
         gameManager.MovePiece(GetMove());
+        UpdateEnemyInfo(board.BoardChange.Value);
 
-        // Update info again
-        lastBoardChange = board.BoardChange.Value;
-
-        // Print time it took
+        // DEBUG: Print time it took
         float endingTime = Time.realtimeSinceStartup;
-        Debug.Log("AI took " + (endingTime - startingTime).ToString());
+        Debug.Log("AI took " + (endingTime - startingTime));
+
+        // DEBUG: Print counts for each pieces
+        if (pieceCounterPanel != null)
+        {
+            pieceCounterPanel.UpdateText(piecePool);
+        }
+    }
+
+    private void UpdateEnemyInfo(BoardChange boardChange)
+    {
+        if (!boardChange.WasThereAnAttack())
+            return;
+
+        PieceInfo thisPiece = boardChange.GetPiece(side);
+        PieceInfo otherPiece = boardChange.GetPiece(side.Flip());
+        RankPossibilities enemyRankPossibilities = enemyPiecesPossibilities[otherPiece];
+
+        if (boardChange.GetWinningPiece() == null)
+        {
+            enemyRankPossibilities.TiedBattle(thisPiece.Rank);
+        }
+        else if (otherPiece == boardChange.GetWinningPiece())
+        {
+            enemyRankPossibilities.WonBattle(thisPiece.Rank);
+        }
+        else // This piece is the winner
+        {
+            enemyRankPossibilities.LostBattle(thisPiece.Rank);
+        }
     }
 
     private MoveInfo GetMove()
@@ -48,7 +98,9 @@ public class EnemyAI : Actor
 
         // Add 0/0 fractional results
         for (int i = 0; i < allPossibleMoves.Count; i++)
+        {
             results.Add(new Fraction(0, 0));
+        }
 
         // Explore each move
         for (int i = 0; i < allPossibleMoves.Count; i++)
@@ -56,7 +108,7 @@ public class EnemyAI : Actor
             Fraction result = results[i];
 
             // Explore this move a set number of times
-            for (int j = 0; j < 50; j++)
+            for (int j = 0; j < 1; j++)
             {
                 Board boardCopy = board.GetCopyWithHiddenPieces(side);
 
@@ -75,7 +127,9 @@ public class EnemyAI : Actor
                 // Update result
                 // TODO: GameOutput and Side is just the same!
                 if (boardCopy.CurrentGameOutput == GameOutput.B)
+                {
                     result.Numerator++;
+                }
 
                 result.Denominator++;
             }
@@ -101,7 +155,7 @@ public class EnemyAI : Actor
     private void GuessEnemyPieces(Board boardCopy)
     {
         // TODO: Smart guessing
-        List <PieceRank> ranks = new List<PieceRank>()
+        List<PieceRank> ranks = new List<PieceRank>
         {
             PieceRank.Spy,
             PieceRank.Spy,
@@ -126,9 +180,13 @@ public class EnemyAI : Actor
             PieceRank.Flag
         };
 
+        
+
         // Shuffle
         ranks.Shuffle();
         for (int k = 0; k < PieceContainer.MAX_CAPACITY; k++)
+        {
             boardCopy.PiecesA[k].Rank = ranks[k];
+        }
     }
 }

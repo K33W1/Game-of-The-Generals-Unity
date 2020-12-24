@@ -213,7 +213,7 @@ public class Board
 
     private Side AttackPiece(PieceInfo pieceA, PieceInfo pieceB)
     {
-        Side winningSide = GameRules.GetWinningSide(pieceA, pieceB);
+        Side winningSide = GameRules.GetWinningSide(pieceA.Rank, pieceB.Rank);
 
         // Remove losing piece
         if (winningSide != Side.None)
