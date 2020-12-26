@@ -14,6 +14,8 @@ public abstract class Actor : MonoBehaviour
     protected PieceContainer myPieces = null;
     protected PieceContainer otherPieces = null;
 
+    private Piece[] myMonoPieces = null;
+
     public virtual void Initialize(GameManager gameManager, Board board, PieceContainer myPieces, PieceContainer otherPieces)
     {
         this.gameManager = gameManager;
@@ -22,14 +24,16 @@ public abstract class Actor : MonoBehaviour
         this.otherPieces = otherPieces;
     }
 
+    private void Awake()
+    {
+        myMonoPieces = GetComponentsInChildren<Piece>();
+    }
+
     public abstract void PerformSpawn();
     public abstract void PerformMove();
 
     public void RandomizeSpawns()
     {
-        // Get all pieces
-        PieceContainer allPieces = board.GetPieceContainer(side);
-
         // List all valid spawn positions
         List<BoardPosition> spawnPos = new List<BoardPosition>();
         for (int i = 0; i < Board.WIDTH; i++)
@@ -41,6 +45,14 @@ public abstract class Actor : MonoBehaviour
 
         // Spawn pieces
         for (int i = 0; i < PieceContainer.MAX_CAPACITY; i++)
-            gameManager.SpawnPiece(new MoveInfo(allPieces[i], spawnPos[i]));
+            gameManager.SpawnPiece(new MoveInfo(myPieces[i], spawnPos[i]));
+    }
+
+    public void TogglePieceVisibility()
+    {
+        foreach (Piece piece in myMonoPieces)
+        {
+            piece.ToggleVisibility();
+        }
     }
 }

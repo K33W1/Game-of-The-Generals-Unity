@@ -95,11 +95,6 @@ public class PieceContainer : IEnumerable<PieceInfo>, IDeepCopyable<PieceContain
         return InactivePieces.Count == 0;
     }
 
-    public void ToggleVisibility()
-    {
-        // TODO: Toggle visibility
-    }
-
     public IEnumerator<PieceInfo> GetEnumerator()
     {
         for (int i = 0; i < ActivePieces.Count; i++)

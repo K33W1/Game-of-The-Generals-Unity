@@ -3,10 +3,10 @@
 public class TogglePieceVisibilityButton : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private PieceContainer enemyPieces = null;
+    [SerializeField] private Actor enemyPieces = null;
 
     public void ToggleVisibility()
     {
-        enemyPieces.ToggleVisibility();
+        enemyPieces.TogglePieceVisibility();
     }
 }
