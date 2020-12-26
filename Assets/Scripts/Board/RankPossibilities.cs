@@ -7,11 +7,11 @@ public class RankPossibilities
     private readonly List<bool> possibilities = null;
     private readonly List<int> piecePool = null;
 
-    public RankPossibilities(List<int> piecePool)
+    public RankPossibilities(List<int> newPiecePool)
     {
         PossibilitiesCount = 15;
         possibilities = new List<bool>(15);
-        this.piecePool = piecePool;
+        piecePool = newPiecePool;
 
         for (int i = 0; i < PossibilitiesCount; i++)
         {
@@ -22,6 +22,11 @@ public class RankPossibilities
     public float GetConfidence()
     {
         return 1 - (PossibilitiesCount / 15);
+    }
+
+    public bool IsPiecePossible(PieceRank rank)
+    {
+        return possibilities[(int) rank];
     }
 
     public void WonBattle(PieceRank otherRank)

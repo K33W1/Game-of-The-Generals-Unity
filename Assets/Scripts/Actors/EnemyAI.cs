@@ -9,9 +9,34 @@ public class EnemyAI : Actor
     [SerializeField] private PieceCounterPanel pieceCounterPanel = null;
 
     private readonly List<int> piecePool = new List<int>();
-    private readonly Dictionary<PieceInfo, RankPossibilities> enemyPiecesPossibilities =
+    private readonly Dictionary<PieceInfo, RankPossibilities> enemyPieces =
         new Dictionary<PieceInfo, RankPossibilities>();
     private bool isThinking = false;
+
+    private readonly List<PieceRank> ranks = new List<PieceRank>
+    {
+        PieceRank.Spy,
+        PieceRank.Spy,
+        PieceRank.General5,
+        PieceRank.General4,
+        PieceRank.General3,
+        PieceRank.General2,
+        PieceRank.General1,
+        PieceRank.Colonel,
+        PieceRank.LtColonel,
+        PieceRank.Major,
+        PieceRank.Captain,
+        PieceRank.Lieutenant1,
+        PieceRank.Lieutenant2,
+        PieceRank.Sergeant,
+        PieceRank.Private,
+        PieceRank.Private,
+        PieceRank.Private,
+        PieceRank.Private,
+        PieceRank.Private,
+        PieceRank.Private,
+        PieceRank.Flag
+    };
 
     public override void Initialize(
         GameManager gameManager,
@@ -24,7 +49,7 @@ public class EnemyAI : Actor
         foreach (PieceInfo pieceInfo in otherPieces)
         {
             RankPossibilities rankPossibilities = new RankPossibilities(piecePool);
-            enemyPiecesPossibilities.Add(pieceInfo, rankPossibilities);
+            enemyPieces.Add(pieceInfo, rankPossibilities);
         }
 
         for (int i = 0; i < 15; i++)
@@ -75,19 +100,19 @@ public class EnemyAI : Actor
 
         PieceInfo thisPiece = boardChange.GetPiece(side);
         PieceInfo otherPiece = boardChange.GetPiece(side.Flip());
-        RankPossibilities enemyRankPossibilities = enemyPiecesPossibilities[otherPiece];
+        RankPossibilities otherPieceRank = enemyPieces[otherPiece];
 
         if (boardChange.GetWinningPiece() == null)
         {
-            enemyRankPossibilities.TiedBattle(thisPiece.Rank);
+            otherPieceRank.TiedBattle(thisPiece.Rank);
         }
         else if (otherPiece == boardChange.GetWinningPiece())
         {
-            enemyRankPossibilities.WonBattle(thisPiece.Rank);
+            otherPieceRank.WonBattle(thisPiece.Rank);
         }
         else // This piece is the winner
         {
-            enemyRankPossibilities.LostBattle(thisPiece.Rank);
+            otherPieceRank.LostBattle(thisPiece.Rank);
         }
     }
 
@@ -106,9 +131,7 @@ public class EnemyAI : Actor
             for (int j = 0; j < 2; j++)
             {
                 Board boardCopy = board.GetCopyWithHiddenPieces(side);
-
                 GuessEnemyPieces(boardCopy);
-
                 boardCopy.MovePiece(boardCopy.GetAllValidMoves()[i]);
 
                 // Play random moves until end game
@@ -119,7 +142,7 @@ public class EnemyAI : Actor
                     boardCopy.MovePiece(currentValidMoves[randomIndex]);
                 }
 
-                // Update result
+                // If won, increase numerator
                 if (boardCopy.CurrentGameOutput == Side.B)
                 {
                     result.Numerator++;
@@ -150,39 +173,42 @@ public class EnemyAI : Actor
 
     private void GuessEnemyPieces(Board boardCopy)
     {
-        // TODO: Smart guessing
-        List<PieceRank> ranks = new List<PieceRank>
-        {
-            PieceRank.Spy,
-            PieceRank.Spy,
-            PieceRank.General5,
-            PieceRank.General4,
-            PieceRank.General3,
-            PieceRank.General2,
-            PieceRank.General1,
-            PieceRank.Colonel,
-            PieceRank.LtColonel,
-            PieceRank.Major,
-            PieceRank.Captain,
-            PieceRank.Lieutenant1,
-            PieceRank.Lieutenant2,
-            PieceRank.Sergeant,
-            PieceRank.Private,
-            PieceRank.Private,
-            PieceRank.Private,
-            PieceRank.Private,
-            PieceRank.Private,
-            PieceRank.Private,
-            PieceRank.Flag
-        };
-
-        
-
         // Shuffle
         ranks.Shuffle();
-        for (int k = 0; k < PieceContainer.MAX_CAPACITY; k++)
+
+        // Check if all pieces have possible ranks
+        for (int i = 0; i < PieceContainer.MAX_CAPACITY; i++)
         {
-            boardCopy.PiecesA[k].Rank = ranks[k];
+            PieceInfo piece = board.PiecesA[i];
+            RankPossibilities pieceRankPossibilities = enemyPieces[piece];
+            PieceRank pieceRank = ranks[i];
+
+            // Check if piece is possible
+            if (pieceRankPossibilities.IsPiecePossible(pieceRank))
+                continue;
+            
+            // Attempt to switch piece rank
+            for (int j = 0; j < PieceContainer.MAX_CAPACITY; j++)
+            {
+                PieceInfo otherPiece = board.PiecesA[j];
+                RankPossibilities otherPieceRankPossibilities = enemyPieces[otherPiece];
+                PieceRank otherPieceRank = ranks[j];
+
+                // Check if switching works
+                if (otherPieceRankPossibilities.IsPiecePossible(pieceRank) &&
+                    pieceRankPossibilities.IsPiecePossible(otherPieceRank))
+                {
+                    // Switch ranks
+                    ranks[i] = otherPieceRank;
+                    ranks[j] = pieceRank;
+                }
+            }
+        }
+
+        // Copy ranks to board
+        for (int i = 0; i < PieceContainer.MAX_CAPACITY; i++)
+        {
+            boardCopy.PiecesA[i].Rank = ranks[i];
         }
     }
 }
