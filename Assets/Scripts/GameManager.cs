@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
+using UnityEditorInternal;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -7,8 +10,21 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     [Header("References")]
+    [SerializeField] private Transform leftPieceTransform = null;
+    [SerializeField] private Transform midPieceTransform = null;
+    [SerializeField] private Transform rightPieceTransform = null;
+    [SerializeField] private Transform leftPieceDeathTransform = null;
+    [SerializeField] private Transform rightPieceDeathTransform = null;
+    [SerializeField] private SpriteRenderer blackSprite = null;
     [SerializeField] private Actor actorA = null;
     [SerializeField] private Actor actorB = null;
+
+    [Header("Animation Settings")]
+    [SerializeField] float start = 1.0f;
+    [SerializeField] float wait1 = 1.0f;
+    [SerializeField] float death = 0.5f;
+    [SerializeField] float wait2 = 0.5f;
+    [SerializeField] float end = 1.0f;
 
     public event Action<GamePhase> GamePhaseChanged;
     public event Action<Side> GameEnded;
@@ -79,7 +95,7 @@ public class GameManager : MonoBehaviour
     {
         if (Board.SpawnPiece(move))
         {
-            UpdatePieceWorldPosition(move.PieceInfo);
+            UpdatePieceWorldPosition(pieceInfoMap[move.PieceInfo]);
 
             if (Board.CurrentSide == Side.A)
                 actorA.PerformSpawn();
@@ -116,9 +132,84 @@ public class GameManager : MonoBehaviour
 
     public void MovePiece(in MoveInfo move)
     {
+        StartCoroutine(MovePieceCoroutine(move));
+    }
+
+    private IEnumerator MovePieceCoroutine(MoveInfo move)
+    {
         if (Board.MovePiece(move))
         {
-            UpdatePieceWorldPosition(move.PieceInfo);
+            BoardChange boardChange = Board.BoardChange.Value;
+            
+            if (boardChange.WasThereAnAttack())
+            {
+                PieceInfo pieceInfoA = boardChange.GetPieceFromSide(Side.A);
+                PieceInfo pieceInfoB = boardChange.GetPieceFromSide(Side.B);
+                Piece pieceA = pieceInfoMap[pieceInfoA];
+                Piece pieceB = pieceInfoMap[pieceInfoB];
+                Transform pieceATransform = pieceA.transform;
+                Transform pieceBTransform = pieceB.transform;
+
+                Vector3 originalPiecePosA = pieceA.transform.position;
+                Vector3 originalPiecePosB = pieceB.transform.position;
+
+                pieceA.BringToFront();
+                pieceB.BringToFront();
+
+                Sequence sequence = DOTween.Sequence();
+                sequence.Append(pieceATransform.DOMove(leftPieceTransform.position, start))
+                    .Join(pieceBTransform.DOMove(rightPieceTransform.position, start))
+                    .Join(pieceATransform.DOScale(new Vector3(4f, 4f, 4f), start))
+                    .Join(pieceBTransform.DOScale(new Vector3(4f, 4f, 4f), start))
+                    .Join(blackSprite.DOColor(Color.white, start))
+                    .AppendInterval(wait1);
+
+                if (boardChange.GetWinningPiece() == pieceInfoA)
+                {
+                    sequence.Append(pieceBTransform.DOMove(rightPieceDeathTransform.position, death))
+                        .Join(pieceATransform.DOMove(midPieceTransform.position, death));
+                }
+                else if (boardChange.GetWinningPiece() == pieceInfoB)
+                {
+                    sequence.Append(pieceATransform.DOMove(leftPieceDeathTransform.position, death))
+                        .Join(pieceBTransform.DOMove(midPieceTransform.position, death));
+                }
+                else
+                {
+                    sequence.Append(pieceATransform.DOMove(leftPieceDeathTransform.position, death))
+                        .Join(pieceBTransform.DOMove(rightPieceDeathTransform.position, death));
+                }
+
+                sequence.AppendInterval(wait2);
+
+                if (boardChange.GetWinningPiece() != null)
+                {
+                    sequence.Append(boardChange.GetWinningPiece() == pieceInfoA
+                        ? pieceATransform.DOMove(originalPiecePosA, end)
+                        : pieceBTransform.DOMove(originalPiecePosB, end))
+                        .Join(pieceATransform.DOScale(Vector3.one, start))
+                        .Join(pieceBTransform.DOScale(Vector3.one, start))
+                        .Join(blackSprite.DOColor(Color.clear, start));
+                }
+                else
+                {
+                    sequence.Append(blackSprite.DOColor(Color.clear, start));
+                }
+                
+                sequence.Play();
+
+                yield return sequence.WaitForCompletion();
+
+                if (!pieceInfoA.IsAlive)
+                    pieceA.Disable();
+                if (!pieceInfoB.IsAlive)
+                    pieceB.Disable();
+
+                pieceA.BringToMiddle();
+                pieceB.BringToMiddle();
+            }
+
+            UpdatePieceWorldPosition(pieceInfoMap[move.PieceInfo]);
 
             if (Board.CurrentGameOutput != Side.None)
                 EndGame();
@@ -147,12 +238,12 @@ public class GameManager : MonoBehaviour
         GameEnded.Invoke(Board.CurrentGameOutput);
     }
 
-    private void UpdatePieceWorldPosition(PieceInfo pieceInfo)
+    private void UpdatePieceWorldPosition(Piece piece)
     {
-        if (!pieceInfo.IsAlive)
+        if (!piece.Info.IsAlive)
             return;
 
-        pieceInfoMap[pieceInfo].transform.position = GetCellToWorld(pieceInfo.BoardPosition);
+        piece.transform.position = GetCellToWorld(piece.Info.BoardPosition);
     }
 
     #region Helpers

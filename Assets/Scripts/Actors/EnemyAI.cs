@@ -7,6 +7,8 @@ using Random = UnityEngine.Random;
 public class EnemyAI : Actor
 {
     [SerializeField] private PieceCounterPanel pieceCounterPanel = null;
+    [SerializeField] private bool printBestScore = false;
+    [SerializeField] private int iterations = 50;
 
     private readonly List<int> piecePool = new List<int>();
     private readonly Dictionary<PieceInfo, RankPossibilities> enemyPieces =
@@ -98,8 +100,8 @@ public class EnemyAI : Actor
         if (!boardChange.WasThereAnAttack())
             return;
 
-        PieceInfo thisPiece = boardChange.GetPiece(side);
-        PieceInfo otherPiece = boardChange.GetPiece(side.Flip());
+        PieceInfo thisPiece = boardChange.GetPieceFromAction(side);
+        PieceInfo otherPiece = boardChange.GetPieceFromAction(side.Flip());
         RankPossibilities otherPieceRank = enemyPieces[otherPiece];
 
         if (boardChange.GetWinningPiece() == null)
@@ -128,7 +130,7 @@ public class EnemyAI : Actor
             Fraction result = new Fraction(0, 0);
 
             // Explore this move a set number of times
-            for (int j = 0; j < 2; j++)
+            for (int j = 0; j < iterations; j++)
             {
                 Board boardCopy = board.GetCopyWithHiddenPieces(side);
                 GuessEnemyPieces(boardCopy);
@@ -168,6 +170,11 @@ public class EnemyAI : Actor
             }
         }
 
+        if (printBestScore)
+        {
+            Debug.Log("Best score: " + bestScore);
+        }
+
         return allPossibleMoves[bestMoveIndex];
     }
 
@@ -188,6 +195,7 @@ public class EnemyAI : Actor
                 continue;
             
             // Attempt to switch piece rank
+            bool didSwitch = false;
             for (int j = 0; j < PieceContainer.MAX_CAPACITY; j++)
             {
                 PieceInfo otherPiece = board.PiecesA[j];
@@ -201,7 +209,14 @@ public class EnemyAI : Actor
                     // Switch ranks
                     ranks[i] = otherPieceRank;
                     ranks[j] = pieceRank;
+                    didSwitch = true;
+                    break;
                 }
+            }
+
+            if (!didSwitch)
+            {
+                Debug.Log("Failed to switch!");
             }
         }
 

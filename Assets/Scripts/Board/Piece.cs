@@ -2,11 +2,10 @@
 
 public class Piece : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private Sprite hiddenSprite = null;
+    [Header("References")] [SerializeField]
+    private Sprite hiddenSprite = null;
 
-    [Header("Settings")]
-    [SerializeField] private PieceInfo pieceInfo = null;
+    [Header("Settings")] [SerializeField] private PieceInfo pieceInfo = null;
 
     public PieceInfo Info => pieceInfo;
 
@@ -26,10 +25,26 @@ public class Piece : MonoBehaviour
         visibleSprite = spriteRenderer.sprite;
     }
 
-    private void Update()
+    public void BringToFront()
     {
-        collider.enabled = pieceInfo.IsAlive;
-        spriteRenderer.enabled = pieceInfo.IsAlive;
+        spriteRenderer.sortingOrder = 10;
+    }
+
+    public void BringToMiddle()
+    {
+        spriteRenderer.sortingOrder = 0;
+    }
+
+    public void Enable()
+    {
+        collider.enabled = true;
+        spriteRenderer.enabled = true;
+    }
+
+    public void Disable()
+    {
+        collider.enabled = false;
+        spriteRenderer.enabled = false;
     }
 
     public void ToggleVisibility()

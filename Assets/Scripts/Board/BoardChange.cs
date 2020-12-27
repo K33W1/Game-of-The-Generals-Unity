@@ -34,7 +34,12 @@
         return AttackWinningSide == Side.A ? PieceMoved : PieceAttacked;
     }
 
-    public PieceInfo GetPiece(Side side)
+    public PieceInfo GetPieceFromAction(Side side)
+    {
+        return PieceMoved.Side == side ? PieceMoved : PieceAttacked;
+    }
+
+    public PieceInfo GetPieceFromSide(Side side)
     {
         return PieceMoved.Side == side ? PieceMoved : PieceAttacked;
     }

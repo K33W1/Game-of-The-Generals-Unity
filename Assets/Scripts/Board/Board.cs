@@ -17,12 +17,12 @@ public class Board
     public Side CurrentSide { get; private set; } = Side.None;
 
     public Board(PieceInfo[,] pieceGrid,
-                 PieceContainer piecesA,
-                 PieceContainer piecesB,
-                 BoardChange? boardChange,
-                 GamePhase currentGamePhase,
-                 Side currentGameOutput,
-                 Side currentSide)
+        PieceContainer piecesA,
+        PieceContainer piecesB,
+        BoardChange? boardChange,
+        GamePhase currentGamePhase,
+        Side currentGameOutput,
+        Side currentSide)
     {
         PieceGrid = pieceGrid;
         PiecesA = piecesA;
@@ -91,7 +91,6 @@ public class Board
                 PiecesA.ActivatePiece(move.PieceInfo);
                 return true;
             }
-
         }
         else
         {
