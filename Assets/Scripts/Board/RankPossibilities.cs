@@ -35,6 +35,11 @@ public class RankPossibilities
         {
             RemovePiecePossibility(PieceRanks.AllRanksWithoutPrivate);
         }
+        else if (otherRank == PieceRank.Private)
+        {
+            RemovePiecePossibility(PieceRank.Spy);
+            RemovePiecePossibility(PieceRank.Private);
+        }
         else
         {
             for (PieceRank thisRank = otherRank; thisRank < PieceRank.Flag; thisRank++)
