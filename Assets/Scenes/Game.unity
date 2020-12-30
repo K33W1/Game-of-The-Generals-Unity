@@ -8177,7 +8177,7 @@ MonoBehaviour:
   pieceCounterPanel: {fileID: 2035371952}
   printBestScore: 1
   minIterations: 20
-  maxIterations: 200
+  maxIterations: 2000
 --- !u!1001 &2108292936
 PrefabInstance:
   m_ObjectHideFlags: 0

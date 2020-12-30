@@ -1,6 +1,5 @@
 ﻿using Extensions;
 using System.Collections.Generic;
-using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -125,6 +124,7 @@ public class EnemyAI : Actor
     {
         List<MoveInfo> allPossibleMoves = board.GetAllValidMoves();
         List<Fraction> results = new List<Fraction>(allPossibleMoves.Count);
+        int iterations = GetIterations();
 
         // Explore each move
         for (int i = 0; i < allPossibleMoves.Count; i++)
@@ -133,22 +133,17 @@ public class EnemyAI : Actor
             Fraction result = new Fraction(0, 0);
 
             // Explore this move a set number of times
-            for (int j = 0; j < GetIterations(); j++)
+            for (int j = 0; j < iterations; j++)
             {
                 Board boardCopy = board.GetCopyWithHiddenPieces(side);
                 GuessEnemyPieces(boardCopy);
                 boardCopy.MovePiece(boardCopy.GetAllValidMoves()[i]);
 
                 // Play random moves until end game
-                while (boardCopy.CurrentGameOutput == Side.None)
-                {
-                    List<MoveInfo> currentValidMoves = boardCopy.GetAllValidMoves();
-                    int randomIndex = Random.Range(0, currentValidMoves.Count);
-                    boardCopy.MovePiece(currentValidMoves[randomIndex]);
-                }
+                Rollout(boardCopy);
 
                 // If won, increase numerator
-                if (boardCopy.CurrentGameOutput == Side.B)
+                if (boardCopy.CurrentGameOutput == side)
                 {
                     result.Numerator++;
                 }
@@ -181,6 +176,16 @@ public class EnemyAI : Actor
         return allPossibleMoves[bestMoveIndex];
     }
 
+    private void Rollout(Board boardCopy)
+    {
+        while (boardCopy.CurrentGameOutput == Side.None)
+        {
+            List<MoveInfo> currentValidMoves = boardCopy.GetAllValidMoves();
+            int randomIndex = Random.Range(0, currentValidMoves.Count);
+            boardCopy.MovePiece(currentValidMoves[randomIndex]);
+        }
+    }
+
     private int GetIterations()
     {
         // Get sum of confidences
@@ -203,29 +208,29 @@ public class EnemyAI : Actor
         // Check if all pieces have possible ranks
         for (int i = 0; i < PieceContainer.MAX_CAPACITY; i++)
         {
-            PieceInfo piece = board.PiecesA[i];
-            RankPossibilities pieceRankPossibilities = enemyPieces[piece];
-            PieceRank pieceRank = ranks[i];
+            PieceInfo piece1 = otherPieces[i];
+            RankPossibilities piece1RankPossibilities = enemyPieces[piece1];
+            PieceRank piece1Rank = ranks[i];
 
             // Check if piece is possible
-            if (pieceRankPossibilities.IsPiecePossible(pieceRank))
+            if (piece1RankPossibilities.IsPiecePossible(piece1Rank))
                 continue;
             
             // Attempt to switch piece rank
             bool didSwitch = false;
             for (int j = 0; j < PieceContainer.MAX_CAPACITY; j++)
             {
-                PieceInfo otherPiece = board.PiecesA[j];
-                RankPossibilities otherPieceRankPossibilities = enemyPieces[otherPiece];
-                PieceRank otherPieceRank = ranks[j];
+                PieceInfo piece2 = otherPieces[j];
+                RankPossibilities piece2RankPossibilities = enemyPieces[piece2];
+                PieceRank piece2Rank = ranks[j];
 
                 // Check if switching works
-                if (otherPieceRankPossibilities.IsPiecePossible(pieceRank) &&
-                    pieceRankPossibilities.IsPiecePossible(otherPieceRank))
+                if (piece2RankPossibilities.IsPiecePossible(piece1Rank) &&
+                    piece1RankPossibilities.IsPiecePossible(piece2Rank))
                 {
                     // Switch ranks
-                    ranks[i] = otherPieceRank;
-                    ranks[j] = pieceRank;
+                    ranks[i] = piece2Rank;
+                    ranks[j] = piece1Rank;
                     didSwitch = true;
                     break;
                 }
@@ -238,9 +243,10 @@ public class EnemyAI : Actor
         }
 
         // Copy ranks to board
+        PieceContainer otherPiecesCopy = boardCopy.GetPieceContainer(side.Flip());
         for (int i = 0; i < PieceContainer.MAX_CAPACITY; i++)
         {
-            boardCopy.PiecesA[i].Rank = ranks[i];
+            otherPiecesCopy[i].Rank = ranks[i];
         }
     }
 }
