@@ -35,13 +35,13 @@ public class Piece : MonoBehaviour
         spriteRenderer.sortingOrder = 0;
     }
 
-    public void Enable()
+    public void Show()
     {
         collider.enabled = true;
         spriteRenderer.enabled = true;
     }
 
-    public void Disable()
+    public void Hide()
     {
         collider.enabled = false;
         spriteRenderer.enabled = false;

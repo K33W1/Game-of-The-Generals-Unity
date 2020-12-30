@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
-using UnityEditorInternal;
 using UnityEngine;
 
 [DisallowMultipleComponent]
@@ -10,6 +9,8 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     [Header("References")]
+    [SerializeField] private Graveyard graveyardA = null;
+    [SerializeField] private Graveyard graveyardB = null;
     [SerializeField] private Transform leftPieceTransform = null;
     [SerializeField] private Transform midPieceTransform = null;
     [SerializeField] private Transform rightPieceTransform = null;
@@ -200,10 +201,13 @@ public class GameManager : MonoBehaviour
 
                 yield return sequence.WaitForCompletion();
 
+                pieceATransform.localScale = Vector3.one;
+                pieceBTransform.localScale = Vector3.one;
+
                 if (!pieceInfoA.IsAlive)
-                    pieceA.Disable();
+                    graveyardA.AddPiece(pieceInfoMap[pieceInfoA]);
                 if (!pieceInfoB.IsAlive)
-                    pieceB.Disable();
+                    graveyardB.AddPiece(pieceInfoMap[pieceInfoB]);
 
                 pieceA.BringToMiddle();
                 pieceB.BringToMiddle();
