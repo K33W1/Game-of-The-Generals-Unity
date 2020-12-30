@@ -68,6 +68,16 @@ public class PieceContainer : IEnumerable<PieceInfo>, IDeepCopyable<PieceContain
         set => this[i] = value;
     }
 
+    public PieceInfo GetPieceFromRank(PieceRank rank)
+    {
+        return AllPieces.Find(info => info.Rank == rank);
+    }
+
+    public List<PieceInfo> GetAllPiecesFromRank(PieceRank rank)
+    {
+        return AllPieces.FindAll(info => info.Rank == rank);
+    }
+
     public void ActivatePiece(PieceInfo piece)
     {
         if (InactivePieces.Remove(piece))

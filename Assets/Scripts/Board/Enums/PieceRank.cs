@@ -18,6 +18,33 @@
     Flag
 }
 
+public static class PieceRankExtensions
+{
+    private static readonly float[] RankValues =
+    {
+        7.50f,
+        7.80f,
+        6.95f,
+        6.15f,
+        5.40f,
+        4.70f,
+        4.05f,
+        3.45f,
+        2.90f,
+        2.40f,
+        1.95f,
+        1.55f,
+        1.20f,
+        1.37f,
+        0.0f,
+    };
+
+    public static float GetValue(this PieceRank rank)
+    {
+        return RankValues[(int) rank];
+    }
+}
+
 public static class PieceRanks
 {
     public static readonly PieceRank[] AllRanks =

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 
 public class Board
@@ -276,7 +277,7 @@ public class Board
         BoardPosition oldPos = move.OldPosition;
         BoardPosition newPos = move.NewPosition;
 
-        if (IsPositionInsideGrid(oldPos))
+        if (IsValidPosition(oldPos))
             PieceGrid[oldPos.x, oldPos.y] = null;
 
         PieceGrid[newPos.x, newPos.y] = move.PieceInfo;
@@ -306,7 +307,7 @@ public class Board
         BoardPosition oldPos = move.OldPosition;
         BoardPosition newPos = move.NewPosition;
 
-        if (!IsPositionInsideGrid(newPos))
+        if (!IsValidPosition(newPos))
             return false;
 
         if (!oldPos.IsPositionAdjacent(newPos))
@@ -323,8 +324,13 @@ public class Board
         return false;
     }
 
-    private bool IsPositionInsideGrid(in BoardPosition pos)
+    public bool IsValidPosition(in BoardPosition pos)
     {
         return !(pos.x < 0 || pos.y < 0 || pos.x >= WIDTH || pos.y >= HEIGHT);
+    }
+
+    public PieceInfo GetPieceInfo(int x, int y)
+    {
+        return PieceGrid[x, y]; 
     }
 }

@@ -67,8 +67,7 @@ public class EnemyAI : Actor
 
         isThinking = true;
 
-        // TODO: Smart spawning
-        RandomizeSpawns();
+        GenerateSmartSpawns();
         gameManager.ConfirmSpawn();
 
         isThinking = false;

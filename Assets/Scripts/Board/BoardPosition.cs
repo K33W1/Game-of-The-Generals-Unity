@@ -16,6 +16,10 @@ public struct BoardPosition
     public BoardPosition Down => new BoardPosition(x, y - 1);
     public BoardPosition Left => new BoardPosition(x - 1, y);
     public BoardPosition Right => new BoardPosition(x + 1, y);
+    public BoardPosition UpperLeft => new BoardPosition(x - 1, y + 1);
+    public BoardPosition UpperRight => new BoardPosition(x + 1, y + 1);
+    public BoardPosition DownLeft => new BoardPosition(x - 1, y - 1);
+    public BoardPosition DownRight => new BoardPosition(x + 1, y - 1);
 
     public bool IsPositionAdjacent(BoardPosition otherPos)
     {
