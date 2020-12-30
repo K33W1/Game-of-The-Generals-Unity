@@ -1,5 +1,6 @@
 ﻿using Extensions;
 using System.Collections.Generic;
+using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -8,7 +9,8 @@ public class EnemyAI : Actor
 {
     [SerializeField] private PieceCounterPanel pieceCounterPanel = null;
     [SerializeField] private bool printBestScore = false;
-    [SerializeField] private int iterations = 50;
+    [SerializeField, Min(0)] private int minIterations = 1;
+    [SerializeField, Min(0)] private int maxIterations = 200;
 
     private readonly List<int> piecePool = new List<int>();
     private readonly Dictionary<PieceInfo, RankPossibilities> enemyPieces =
@@ -58,13 +60,15 @@ public class EnemyAI : Actor
         {
             piecePool.Add(21);
         }
+
+        TogglePieceVisibility();
     }
 
     public override void PerformSpawn()
     {
         if (isThinking)
             return;
-
+        
         isThinking = true;
 
         GenerateSmartSpawns();
@@ -129,7 +133,7 @@ public class EnemyAI : Actor
             Fraction result = new Fraction(0, 0);
 
             // Explore this move a set number of times
-            for (int j = 0; j < iterations; j++)
+            for (int j = 0; j < GetIterations(); j++)
             {
                 Board boardCopy = board.GetCopyWithHiddenPieces(side);
                 GuessEnemyPieces(boardCopy);
@@ -175,6 +179,20 @@ public class EnemyAI : Actor
         }
 
         return allPossibleMoves[bestMoveIndex];
+    }
+
+    private int GetIterations()
+    {
+        // Get sum of confidences
+        float sum = 0f;
+        foreach (RankPossibilities rankPossibilities in enemyPieces.Values)
+        {
+            sum += rankPossibilities.GetConfidence();
+        }
+
+        // Average confidence
+        float confidence = sum / enemyPieces.Count;
+        return (int) (minIterations + (maxIterations - minIterations) * confidence);
     }
 
     private void GuessEnemyPieces(Board boardCopy)
