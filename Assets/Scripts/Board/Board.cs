@@ -86,24 +86,33 @@ public class Board
 
         if (CurrentSide == Side.A)
         {
-            if (pos.x >= 0 && pos.x < WIDTH && pos.y >= 0 && pos.y <= 2)
-            {
-                PlacePiece(move);
-                PiecesA.ActivatePiece(move.PieceInfo);
-                return true;
-            }
+            if (pos.x < 0 || pos.x >= WIDTH || pos.y < 0 || pos.y > 2)
+                return false;
+
+            if (PieceGrid[pos.x, pos.y] != null)
+                return false;
+
+            PlacePiece(move);
+            PiecesA.ActivatePiece(move.PieceInfo);
+        }
+        else if (CurrentSide == Side.B)
+        {
+            if (pos.x < 0 || pos.x >= WIDTH || pos.y < 5 || pos.y > 7)
+                return false;
+
+            if (PieceGrid[pos.x, pos.y] != null)
+                return false;
+
+            PlacePiece(move);
+            PiecesB.ActivatePiece(move.PieceInfo);
         }
         else
         {
-            if (pos.x >= 0 && pos.x < WIDTH && pos.y >= 5 && pos.y <= 7)
-            {
-                PlacePiece(move);
-                PiecesB.ActivatePiece(move.PieceInfo);
-                return true;
-            }
+            Debug.LogError("Invalid current side when spawning!");
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     public bool ConfirmSpawn()

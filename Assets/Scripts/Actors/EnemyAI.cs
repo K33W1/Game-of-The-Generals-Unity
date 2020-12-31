@@ -238,7 +238,7 @@ public class EnemyAI : Actor
 
             if (!didSwitch)
             {
-                Debug.Log("Failed to switch!");
+                Debug.LogWarning("Failed to switch!");
             }
         }
 

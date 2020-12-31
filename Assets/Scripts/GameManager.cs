@@ -95,18 +95,12 @@ public class GameManager : MonoBehaviour
     public void SpawnPiece(in MoveInfo move)
     {
         if (Board.SpawnPiece(move))
-        {
             UpdatePieceWorldPosition(pieceInfoMap[move.PieceInfo]);
 
-            if (Board.CurrentSide == Side.A)
-                actorA.PerformSpawn();
-            else
-                actorB.PerformSpawn();
-        }
+        if (Board.CurrentSide == Side.A)
+            actorA.PerformSpawn();
         else
-        {
-            Debug.LogError("Error spawning piece!");
-        }
+            actorB.PerformSpawn();
     }
 
     public void ConfirmSpawn()
