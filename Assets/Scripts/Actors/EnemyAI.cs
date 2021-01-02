@@ -11,10 +11,27 @@ public class EnemyAI : Actor
     [SerializeField, Min(0)] private int minIterations = 1;
     [SerializeField, Min(0)] private int maxIterations = 200;
 
-    private readonly List<int> piecePool = new List<int>();
     private readonly Dictionary<PieceInfo, RankPossibilities> enemyPieces =
         new Dictionary<PieceInfo, RankPossibilities>();
     private bool isThinking = false;
+    private readonly List<int> piecePool = new List<int>
+    {
+        2,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        6,
+        1
+    };
 
     private readonly List<PieceRank> ranks = new List<PieceRank>
     {
@@ -51,14 +68,11 @@ public class EnemyAI : Actor
 
         foreach (PieceInfo pieceInfo in otherPieces)
         {
-            RankPossibilities rankPossibilities = new RankPossibilities(piecePool);
+            RankPossibilities rankPossibilities = new RankPossibilities();
             enemyPieces.Add(pieceInfo, rankPossibilities);
         }
 
-        for (int i = 0; i < 15; i++)
-        {
-            piecePool.Add(21);
-        }
+        pieceCounterPanel.UpdateText(piecePool);
 
         TogglePieceVisibility();
     }
@@ -89,12 +103,6 @@ public class EnemyAI : Actor
         // DEBUG: Print time it took
         float endingTime = Time.realtimeSinceStartup;
         Debug.Log("AI took " + (endingTime - startingTime));
-
-        // DEBUG: Print counts for each pieces
-        if (pieceCounterPanel != null)
-        {
-            pieceCounterPanel.UpdateText(piecePool);
-        }
     }
 
     private void UpdateEnemyInfo(BoardChange boardChange)
@@ -117,6 +125,26 @@ public class EnemyAI : Actor
         else // This piece is the winner
         {
             otherPieceRank.LostBattle(thisPiece.Rank);
+        }
+
+        // Remove from piece pool once piece has been discovered
+        PieceRank guaranteedRank = otherPieceRank.GuaranteedRank;
+        if (guaranteedRank == PieceRank.Invalid)
+            return;
+
+        piecePool[(int) guaranteedRank]--;
+        pieceCounterPanel.UpdateText(piecePool);
+
+        // If piece pool reaches 0, all other pieces can't be this piece
+        if (piecePool[(int) guaranteedRank] > 0)
+            return;
+
+        foreach (RankPossibilities rankPossibilities in enemyPieces.Values)
+        {
+            if (rankPossibilities.GuaranteedRank == guaranteedRank)
+                continue;
+                
+            rankPossibilities.RemovePiecePossibility(guaranteedRank);
         }
     }
 

@@ -9,13 +9,11 @@ public class PieceCounterPanel : MonoBehaviour
 
     private readonly List<TextMeshProUGUI> texts = new List<TextMeshProUGUI>();
 
-    private void Start()
+    public void Awake()
     {
         for (PieceRank i = PieceRank.Spy; i <= PieceRank.Flag; i++)
         {
-            TextMeshProUGUI text = Instantiate(textPrefab, transform);
-            texts.Add(text);
-            text.text = i.ToString() + " 21";
+            texts.Add(Instantiate(textPrefab, transform));
         }
     }
 

@@ -2,31 +2,31 @@
 
 public class RankPossibilities
 {
-    public int PossibilitiesCount { get; private set; }
+    public List<PieceRank> PossibleRanks { get; }
+    public PieceRank GuaranteedRank = PieceRank.Invalid;
 
     private readonly List<bool> possibilities = null;
-    private readonly List<int> piecePool = null;
 
-    public RankPossibilities(List<int> newPiecePool)
+    public RankPossibilities()
     {
-        PossibilitiesCount = 15;
         possibilities = new List<bool>(15);
-        piecePool = newPiecePool;
+        PossibleRanks = new List<PieceRank>(15);
 
-        for (int i = 0; i < PossibilitiesCount; i++)
+        for (int i = 0; i < 15; i++)
         {
             possibilities.Add(true);
+            PossibleRanks.Add((PieceRank)i);
         }
     }
 
     public float GetConfidence()
     {
-        return 1 - (PossibilitiesCount / 15);
+        return 1 - (PossibleRanks.Count / 15);
     }
 
     public bool IsPiecePossible(PieceRank rank)
     {
-        return possibilities[(int) rank];
+        return possibilities[(int)rank];
     }
 
     public void WonBattle(PieceRank otherRank)
@@ -39,6 +39,7 @@ public class RankPossibilities
         {
             RemovePiecePossibility(PieceRank.Spy);
             RemovePiecePossibility(PieceRank.Private);
+            RemovePiecePossibility(PieceRank.Flag);
         }
         else
         {
@@ -47,6 +48,8 @@ public class RankPossibilities
                 RemovePiecePossibility(thisRank);
             }
         }
+
+        DiscoverRank();
     }
 
     public void LostBattle(PieceRank otherRank)
@@ -67,6 +70,8 @@ public class RankPossibilities
                 RemovePiecePossibility(thisRank);
             }
         }
+
+        DiscoverRank();
     }
 
     public void TiedBattle(PieceRank otherRank)
@@ -78,9 +83,11 @@ public class RankPossibilities
 
             RemovePiecePossibility(thisRank);
         }
+
+        DiscoverRank();
     }
 
-    private void RemovePiecePossibility(PieceRank[] pieceRanks)
+    public void RemovePiecePossibility(PieceRank[] pieceRanks)
     {
         foreach (PieceRank thisRank in pieceRanks)
         {
@@ -88,13 +95,22 @@ public class RankPossibilities
         }
     }
 
-    private void RemovePiecePossibility(PieceRank rank)
+    public void RemovePiecePossibility(PieceRank rank)
     {
         if (!possibilities[(int)rank])
             return;
 
         possibilities[(int)rank] = false;
-        PossibilitiesCount--;
-        piecePool[(int)rank]--;
+        PossibleRanks.Remove(rank);
     }
+
+
+    private void DiscoverRank()
+    {
+        if (PossibleRanks.Count == 1)
+        {
+            GuaranteedRank = PossibleRanks[0];
+        }
+    }
+
 }
