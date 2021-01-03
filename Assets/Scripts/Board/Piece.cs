@@ -9,20 +9,15 @@ public class Piece : MonoBehaviour
 
     public PieceInfo Info => pieceInfo;
 
-    private new Collider2D collider = null;
+    private Collider2D spriteCollider = null;
     private SpriteRenderer spriteRenderer = null;
     private Sprite visibleSprite = null;
     private bool isVisible = true;
 
     private void Awake()
     {
-        collider = GetComponent<Collider2D>();
+        spriteCollider = GetComponent<Collider2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-    }
-
-    private void Start()
-    {
-        visibleSprite = spriteRenderer.sprite;
     }
 
     public void BringToFront()
@@ -37,13 +32,13 @@ public class Piece : MonoBehaviour
 
     public void Show()
     {
-        collider.enabled = true;
+        spriteCollider.enabled = true;
         spriteRenderer.enabled = true;
     }
 
     public void Hide()
     {
-        collider.enabled = false;
+        spriteCollider.enabled = false;
         spriteRenderer.enabled = false;
     }
 
@@ -52,8 +47,13 @@ public class Piece : MonoBehaviour
         isVisible = !isVisible;
 
         if (isVisible)
+        {
             spriteRenderer.sprite = visibleSprite;
+        }
         else
+        {
+            visibleSprite = spriteRenderer.sprite;
             spriteRenderer.sprite = hiddenSprite;
+        }
     }
 }
