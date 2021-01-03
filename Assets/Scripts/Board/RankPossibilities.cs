@@ -43,7 +43,7 @@ public class RankPossibilities
         }
         else
         {
-            for (PieceRank thisRank = otherRank; thisRank < PieceRank.Flag; thisRank++)
+            for (PieceRank thisRank = otherRank; thisRank <= PieceRank.Flag; thisRank++)
             {
                 RemovePiecePossibility(thisRank);
             }
