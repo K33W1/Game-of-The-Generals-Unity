@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 
 public class Board
@@ -80,9 +79,9 @@ public class Board
         return side == Side.A ? PiecesA : PiecesB;
     }
 
-    public bool SpawnPiece(in MoveInfo move)
+    public bool SpawnPiece(in SpawnInfo spawnInfo)
     {
-        BoardPosition pos = move.NewPosition;
+        BoardPosition pos = spawnInfo.NewPosition;
 
         if (CurrentSide == Side.A)
         {
@@ -92,8 +91,8 @@ public class Board
             if (PieceGrid[pos.x, pos.y] != null)
                 return false;
 
-            PlacePiece(move);
-            PiecesA.ActivatePiece(move.PieceInfo);
+            PlacePiece(spawnInfo.PieceInfo, spawnInfo.NewPosition);
+            PiecesA.ActivatePiece(spawnInfo.PieceInfo);
         }
         else if (CurrentSide == Side.B)
         {
@@ -103,8 +102,8 @@ public class Board
             if (PieceGrid[pos.x, pos.y] != null)
                 return false;
 
-            PlacePiece(move);
-            PiecesB.ActivatePiece(move.PieceInfo);
+            PlacePiece(spawnInfo.PieceInfo, spawnInfo.NewPosition);
+            PiecesB.ActivatePiece(spawnInfo.PieceInfo);
         }
         else
         {
@@ -168,20 +167,57 @@ public class Board
                 return true;
             }
 
-            // Flip side
-            if (CurrentSide == Side.A)
-            {
-                CurrentSide = Side.B;
-                return true;
-            }
-            else
-            {
-                CurrentSide = Side.A;
-                return true;
-            }
+            // Flip sides
+            CurrentSide = CurrentSide.Flip();
+            return true;
         }
 
         return false;
+    }
+
+    public bool DoesPieceExistInPosition(in BoardPosition pos)
+    {
+        return PieceGrid[pos.x, pos.y] != null;
+    }
+
+    public void ForceMove(in MoveInfo move)
+    {
+        Debug.Assert(!DoesPieceExistInPosition(move.NewPosition));
+
+        // Place piece
+        PlacePiece(GetPieceFromPosition(move.OldPosition), move.NewPosition);
+    }
+
+    public void ForceMoveWin(in MoveInfo move)
+    {
+        Debug.Assert(DoesPieceExistInPosition(move.NewPosition));
+
+        // Get needed vars
+        BoardPosition oldPos = move.OldPosition;
+        BoardPosition newPos = move.NewPosition;
+        PieceInfo attackingPiece = PieceGrid[oldPos.x, oldPos.y];
+        PieceInfo dyingPiece = PieceGrid[newPos.x, newPos.y];
+
+        // Kill and move into other piece
+        KillPiece(dyingPiece);
+        PlacePiece(attackingPiece, newPos);
+    }
+
+    public void ForceMoveLose(in MoveInfo move)
+    {
+        Debug.Assert(DoesPieceExistInPosition(move.NewPosition));
+
+        // Get needed vars
+        BoardPosition oldPos = move.OldPosition;
+        PieceInfo pieceInfo = PieceGrid[oldPos.x, oldPos.y];
+
+        // Kill this piece
+        KillPiece(pieceInfo);
+    }
+
+    public void ForceFlipSides()
+    {
+        CurrentSide = CurrentSide.Flip();
     }
 
     private BoardChange? TryMovePiece(in MoveInfo move)
@@ -192,8 +228,9 @@ public class Board
             return null;
         }
 
+        BoardPosition oldPos = move.OldPosition;
         BoardPosition newPos = move.NewPosition;
-        PieceInfo thisPieceInfo = move.PieceInfo;
+        PieceInfo thisPieceInfo = PieceGrid[oldPos.x, oldPos.y];
         PieceInfo otherPieceInfo = PieceGrid[newPos.x, newPos.y];
         Side winningSide = Side.None;
 
@@ -204,20 +241,20 @@ public class Board
 
             // Check if attacking piece won the battle
             if (winningSide == Side.A)
-                PlacePiece(move);
+                PlacePiece(thisPieceInfo, newPos);
         }
         else
         {
-            PlacePiece(move);
+            PlacePiece(thisPieceInfo, newPos);
         }
 
-        return new BoardChange(move, otherPieceInfo, winningSide);
+        return new BoardChange(move, thisPieceInfo, otherPieceInfo, winningSide);
     }
 
-    private void PlacePiece(in MoveInfo move)
+    private void PlacePiece(PieceInfo pieceInfo, in BoardPosition pos)
     {
-        UpdateGridArray(move);
-        UpdatePiecePosition(move);
+        UpdateGridArray(pieceInfo, pieceInfo.BoardPosition, pos);
+        UpdatePiecePosition(pieceInfo, pos);
     }
 
     private Side AttackPiece(PieceInfo pieceA, PieceInfo pieceB)
@@ -274,22 +311,20 @@ public class Board
         return Side.None;
     }
 
-    private void UpdatePiecePosition(in MoveInfo move)
+    private void UpdatePiecePosition(PieceInfo pieceInfo, in BoardPosition pos)
     {
-        PieceInfo pieceInfo = move.PieceInfo;
-        BoardPosition newPos = move.NewPosition;
-        pieceInfo.BoardPosition = newPos;
+        pieceInfo.BoardPosition = pos;
     }
 
-    private void UpdateGridArray(in MoveInfo move)
+    private void UpdateGridArray(
+        PieceInfo pieceInfo,
+        in BoardPosition oldPos,
+        in BoardPosition newPos)
     {
-        BoardPosition oldPos = move.OldPosition;
-        BoardPosition newPos = move.NewPosition;
-
         if (IsValidPosition(oldPos))
             PieceGrid[oldPos.x, oldPos.y] = null;
 
-        PieceGrid[newPos.x, newPos.y] = move.PieceInfo;
+        PieceGrid[newPos.x, newPos.y] = pieceInfo;
     }
 
     private List<MoveInfo> GetPieceValidMoves(PieceInfo piece)
@@ -312,8 +347,8 @@ public class Board
 
     private bool IsValidMove(in MoveInfo move)
     {
-        PieceInfo thisPiece = move.PieceInfo;
         BoardPosition oldPos = move.OldPosition;
+        PieceInfo thisPiece = PieceGrid[oldPos.x, oldPos.y];
         BoardPosition newPos = move.NewPosition;
 
         if (!IsValidPosition(newPos))
@@ -338,8 +373,18 @@ public class Board
         return !(pos.x < 0 || pos.y < 0 || pos.x >= WIDTH || pos.y >= HEIGHT);
     }
 
-    public PieceInfo GetPieceInfo(int x, int y)
+    public bool IsValidPosition(int x, int y)
     {
-        return PieceGrid[x, y]; 
+        return !(x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT);
+    }
+
+    public PieceInfo GetPieceFromPosition(int x, int y)
+    {
+        return IsValidPosition(x, y) ? PieceGrid[x, y] : null; 
+    }
+
+    public PieceInfo GetPieceFromPosition(in BoardPosition pos)
+    {
+        return IsValidPosition(pos) ? PieceGrid[pos.x, pos.y] : null;
     }
 }

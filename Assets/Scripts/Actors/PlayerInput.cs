@@ -58,17 +58,16 @@ public class PlayerInput : Actor
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mouseScreenPos);
         Vector3 piecePos = new Vector3(mouseWorldPos.x, mouseWorldPos.y, piece.transform.position.z);
         BoardPosition targetPosition = gameManager.GetWorldToCell(piecePos);
-        MoveInfo move = new MoveInfo(piece.Info, targetPosition);
         
         if (isCurrentSpawn)
         {
             isCurrentSpawn = false;
-            gameManager.SpawnPiece(move);
+            gameManager.SpawnPiece(new SpawnInfo(piece.Info, targetPosition));
         }
         else if (isCurrentTurn)
         {
             isCurrentTurn = false;
-            gameManager.MovePiece(move);
+            gameManager.MovePiece(new MoveInfo(piece.Info, targetPosition));
         }
     }
 

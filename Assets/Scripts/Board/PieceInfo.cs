@@ -11,16 +11,17 @@ public class PieceInfo : IDeepCopyable<PieceInfo>
     [SerializeField] private PieceRank rank;
     [SerializeField] private Side side;
 
+    public int ID { get; set; }
     public BoardPosition BoardPosition { get => boardPosition; set => boardPosition = value; }
     public bool IsAlive { get => isAlive; set => isAlive = value; }
     public PieceRank Rank { get => rank; set => rank = value; }
     public Side Side => side;
 
-    public PieceInfo(BoardPosition boardPosition, bool isAlive, PieceRank rank, Side side)
+    public PieceInfo(int id, BoardPosition boardPosition, bool isAlive, PieceRank rank, Side side)
     {
-        Debug.Assert(rank != PieceRank.Invalid);
         Debug.Assert(side != Side.None);
 
+        ID = id;
         this.boardPosition = boardPosition;
         this.isAlive = isAlive;
         this.rank = rank;
@@ -29,6 +30,6 @@ public class PieceInfo : IDeepCopyable<PieceInfo>
 
     public PieceInfo DeepCopy()
     {
-        return new PieceInfo(boardPosition, isAlive, rank, side);
+        return new PieceInfo(ID, boardPosition, isAlive, rank, side);
     }
 }

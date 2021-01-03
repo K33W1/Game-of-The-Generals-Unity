@@ -23,6 +23,11 @@ public abstract class Actor : MonoBehaviour
         this.board = board;
         this.myPieces = myPieces;
         this.otherPieces = otherPieces;
+
+        for (int i = 0; i < PieceContainer.MAX_CAPACITY; i++)
+        {
+            myPieces[i].ID = i;
+        }
     }
 
     private void Awake()
@@ -46,7 +51,7 @@ public abstract class Actor : MonoBehaviour
 
         // Spawn pieces
         for (int i = 0; i < PieceContainer.MAX_CAPACITY; i++)
-            gameManager.SpawnPiece(new MoveInfo(myPieces[i], spawnPos[i]));
+            gameManager.SpawnPiece(new SpawnInfo(myPieces[i], spawnPos[i]));
     }
 
     public void GenerateSmartSpawns()
@@ -69,7 +74,7 @@ public abstract class Actor : MonoBehaviour
             Random.Range(0, Board.WIDTH),
             Random.value > 0.25f ? backRow : midRow);
 
-        gameManager.SpawnPiece(new MoveInfo(flag, flagPos));
+        gameManager.SpawnPiece(new SpawnInfo(flag, flagPos));
 
         // Get guard pieces for the flag
         PieceInfo guard1 = ExtractPieceFromList(piecesToSpawn, PieceRank.Spy);
@@ -109,9 +114,9 @@ public abstract class Actor : MonoBehaviour
         guardSpawns.Shuffle();
 
         // Spawn guard pieces
-        gameManager.SpawnPiece(new MoveInfo(guard1, guardSpawns[0]));
-        gameManager.SpawnPiece(new MoveInfo(guard2, guardSpawns[1]));
-        gameManager.SpawnPiece(new MoveInfo(guard3, guardSpawns[2]));
+        gameManager.SpawnPiece(new SpawnInfo(guard1, guardSpawns[0]));
+        gameManager.SpawnPiece(new SpawnInfo(guard2, guardSpawns[1]));
+        gameManager.SpawnPiece(new SpawnInfo(guard3, guardSpawns[2]));
 
         // List all possible spawns
         float leftValue = 0f;
@@ -126,7 +131,7 @@ public abstract class Actor : MonoBehaviour
         {
             for (int j = minSpawnHeight; j <= maxSpawnHeight; j++)
             {
-                PieceInfo pieceInfo = board.GetPieceInfo(i, j);
+                PieceInfo pieceInfo = board.GetPieceFromPosition(i, j);
                 if (pieceInfo != null)
                 {
                     leftValue += pieceInfo.Rank.GetValue();
@@ -143,7 +148,7 @@ public abstract class Actor : MonoBehaviour
         {
             for (int j = minSpawnHeight; j <= maxSpawnHeight; j++)
             {
-                PieceInfo pieceInfo = board.GetPieceInfo(i, j);
+                PieceInfo pieceInfo = board.GetPieceFromPosition(i, j);
                 if (pieceInfo != null)
                 {
                     midValue += pieceInfo.Rank.GetValue();
@@ -160,7 +165,7 @@ public abstract class Actor : MonoBehaviour
         {
             for (int j = minSpawnHeight; j <= maxSpawnHeight; j++)
             {
-                PieceInfo pieceInfo = board.GetPieceInfo(i, j);
+                PieceInfo pieceInfo = board.GetPieceFromPosition(i, j);
                 if (pieceInfo != null)
                 {
                     rightValue += pieceInfo.Rank.GetValue();
@@ -288,7 +293,7 @@ public abstract class Actor : MonoBehaviour
     {
         BoardPosition spawnPos = positions[positions.Count - 1];
         positions.RemoveAt(positions.Count - 1);
-        gameManager.SpawnPiece(new MoveInfo(pieceToSpawn, spawnPos));
+        gameManager.SpawnPiece(new SpawnInfo(pieceToSpawn, spawnPos));
     }
 
     public void TogglePieceVisibility()

@@ -8176,8 +8176,11 @@ MonoBehaviour:
   maxSpawnHeight: 7
   pieceCounterPanel: {fileID: 2035371952}
   printBestScore: 1
-  minIterations: 1
-  maxIterations: 10
+  flagAtRiskMultiplier: 1000
+  opennessMultiplier: 2
+  aggressionMultiplier: 25
+  winningBattleBonus: 250
+  losingBattlePenalty: 200
 --- !u!1001 &2108292936
 PrefabInstance:
   m_ObjectHideFlags: 0

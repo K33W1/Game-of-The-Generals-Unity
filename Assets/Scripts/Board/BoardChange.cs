@@ -6,17 +6,17 @@
     public readonly BoardPosition OldPosition;
     public readonly BoardPosition NewPosition;
 
-    public BoardChange(MoveInfo moveInfo, PieceInfo pieceAttacked)
+    public BoardChange(MoveInfo moveInfo, PieceInfo pieceAttacking, PieceInfo pieceAttacked)
     {
-        PieceMoved = moveInfo.PieceInfo;
+        PieceMoved = pieceAttacking;
         PieceAttacked = pieceAttacked;
         AttackWinningSide = Side.None;
         OldPosition = moveInfo.OldPosition;
         NewPosition = moveInfo.NewPosition;
     }
 
-    public BoardChange(MoveInfo moveInfo, PieceInfo pieceAttacked, Side attackWinningSide)
-        : this(moveInfo, pieceAttacked)
+    public BoardChange(MoveInfo moveInfo, PieceInfo pieceAttacking, PieceInfo pieceAttacked, Side attackWinningSide)
+        : this(moveInfo, pieceAttacking, pieceAttacked)
     {
         AttackWinningSide = attackWinningSide;
     }

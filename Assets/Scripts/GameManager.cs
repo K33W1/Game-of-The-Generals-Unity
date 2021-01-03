@@ -92,10 +92,13 @@ public class GameManager : MonoBehaviour
         actorA.PerformSpawn();
     }
 
-    public void SpawnPiece(in MoveInfo move)
+    public void SpawnPiece(in SpawnInfo spawnInfo)
     {
-        if (Board.SpawnPiece(move))
-            UpdatePieceWorldPosition(pieceInfoMap[move.PieceInfo]);
+        if (Board.SpawnPiece(spawnInfo))
+        {
+            PieceInfo pieceInfo = spawnInfo.PieceInfo;
+            UpdatePieceWorldPosition(pieceInfoMap[pieceInfo]);
+        }
 
         if (Board.CurrentSide == Side.A)
             actorA.PerformSpawn();
@@ -132,6 +135,9 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator MovePieceCoroutine(MoveInfo move)
     {
+        BoardPosition oldPos = move.OldPosition;
+        PieceInfo pieceInfo = Board.GetPieceFromPosition(oldPos);
+
         if (Board.MovePiece(move))
         {
             BoardChange boardChange = Board.BoardChange.Value;
@@ -207,7 +213,7 @@ public class GameManager : MonoBehaviour
                 pieceB.BringToMiddle();
             }
 
-            UpdatePieceWorldPosition(pieceInfoMap[move.PieceInfo]);
+            UpdatePieceWorldPosition(pieceInfoMap[pieceInfo]);
 
             if (Board.CurrentGameOutput != Side.None)
                 EndGame();

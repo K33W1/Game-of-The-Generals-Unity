@@ -34,7 +34,6 @@ public class PieceContainer : IEnumerable<PieceInfo>, IDeepCopyable<PieceContain
     {
         Debug.Assert(activePieces.Capacity == MAX_CAPACITY);
         Debug.Assert(inactivePieces.Capacity == MAX_CAPACITY);
-        Debug.Assert(flag != null);
 
         AllPieces = allPieces;
         ActivePieces = activePieces;
