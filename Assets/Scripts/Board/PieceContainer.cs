@@ -99,11 +99,6 @@ public class PieceContainer : IEnumerable<PieceInfo>, IDeepCopyable<PieceContain
         }
     }
 
-    public bool IsValidSpawn()
-    {
-        return InactivePieces.Count == 0;
-    }
-
     public IEnumerator<PieceInfo> GetEnumerator()
     {
         for (int i = 0; i < ActivePieces.Count; i++)

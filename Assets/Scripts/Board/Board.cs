@@ -118,7 +118,7 @@ public class Board
     {
         if (CurrentSide == Side.A)
         {
-            if (PiecesA.IsValidSpawn())
+            if (IsValidSpawn(CurrentSide))
             {
                 CurrentSide = Side.B;
                 return true;
@@ -130,7 +130,7 @@ public class Board
         }
         else if (CurrentSide == Side.B)
         {
-            if (PiecesB.IsValidSpawn())
+            if (IsValidSpawn(CurrentSide))
             {
                 CurrentSide = Side.A;
                 CurrentGamePhase = GamePhase.Move;
@@ -309,6 +309,24 @@ public class Board
         }
 
         return Side.None;
+    }
+
+    private bool IsValidSpawn(Side side)
+    {
+        int minRow = side == Side.A ? 0 : 5;
+        int maxRow = side == Side.A ? 2 : 7;
+        int count = 0;
+
+        for (int i = 0; i < WIDTH; i++)
+        {
+            for (int j = minRow; j <= maxRow; j++)
+            {
+                if (PieceGrid[i, j] != null)
+                    count++;
+            }
+        }
+
+        return count == PieceContainer.MAX_CAPACITY;
     }
 
     private void UpdatePiecePosition(PieceInfo pieceInfo, in BoardPosition pos)

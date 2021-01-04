@@ -10,6 +10,8 @@ public abstract class Actor : MonoBehaviour
     [SerializeField] private int minSpawnHeight = 0;
     [SerializeField] private int maxSpawnHeight = 2;
 
+    public Side Side => side;
+
     protected GameManager gameManager = null;
     protected Board board = null;
     protected PieceContainer myPieces = null;

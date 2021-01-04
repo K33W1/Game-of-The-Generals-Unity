@@ -124,7 +124,16 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Could not confirm spawn!");
+            Debug.LogWarning("Could not confirm spawn!");
+
+            if (Board.CurrentSide == Side.A)
+            {
+                actorA.PerformSpawn();
+            }
+            else
+            {
+                actorB.PerformSpawn();
+            }
         }
     }
 
