@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public class EnemyAI : Actor
 {
     [SerializeField] private PieceCounterPanel pieceCounterPanel = null;
+    [SerializeField] private LoadingScreen loadingScreen = null;
     [SerializeField] private bool printBestScore = false;
     [SerializeField, Min(0)] private float flagAtRiskMultiplier = 1000f;
     [SerializeField, Min(0)] private float opennessMultiplier = 2f;
@@ -35,6 +37,8 @@ public class EnemyAI : Actor
         6,
         1
     };
+
+    private MoveInfo chosenMove = new MoveInfo();
 
     public override void Initialize(
         GameManager gameManager,
@@ -70,12 +74,18 @@ public class EnemyAI : Actor
 
     public override void PerformMove()
     {
+        StartCoroutine(PerformMoveCoroutine());
+    }
+
+    private IEnumerator PerformMoveCoroutine()
+    {
         // Keep time
         float startingTime = Time.realtimeSinceStartup;
 
         // Update info about enemy's pieces
         UpdateEnemyInfo(board.BoardChange.Value);
-        gameManager.MovePiece(GetMove());
+        yield return StartCoroutine(GetMove());
+        gameManager.MovePiece(chosenMove);
         UpdateEnemyInfo(board.BoardChange.Value);
 
         // DEBUG: Print time it took
@@ -121,11 +131,14 @@ public class EnemyAI : Actor
         }
     }
 
-    private MoveInfo GetMove()
+    private IEnumerator GetMove()
     {
         var allPossibleMoves = board.GetAllValidMoves();
         float bestResult = float.MinValue;
         int bestResultIndex = 0;
+
+        // UI
+        loadingScreen.Show();
 
         // Explore each move
         for (int i = 0; i < allPossibleMoves.Count; i++)
@@ -142,13 +155,20 @@ public class EnemyAI : Actor
                 bestResult = finalResult;
                 bestResultIndex = i;
             }
+
+            // Update loading screen
+            loadingScreen.SetScrollbarValue((float)i / allPossibleMoves.Count);
+
+            yield return 0;
         }
+
+        loadingScreen.Hide();
 
         // DEBUG
         if (printBestScore)
             Debug.Log("Best result: " + bestResult);
 
-        return allPossibleMoves[bestResultIndex];
+        chosenMove = allPossibleMoves[bestResultIndex];
     }
 
     private float EvaluateMove(Board boardCopy, MoveInfo move, int depth)
