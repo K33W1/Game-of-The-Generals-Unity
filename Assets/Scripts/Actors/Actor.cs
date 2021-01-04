@@ -186,9 +186,9 @@ public abstract class Actor : MonoBehaviour
         {
             // Conservative - Equally distribute
             Debug.Log("Conservative spawning");
-            
+
             // Shuffle first
-            piecesToSpawn.Shuffle();
+            piecesToSpawn.Sort((pieceInfo1, pieceInfo2) => pieceInfo2.Rank.GetValue().CompareTo(pieceInfo1.Rank.GetValue()));
             leftFlank.Shuffle();
             midFlank.Shuffle();
             rightFlank.Shuffle();
