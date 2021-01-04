@@ -6,11 +6,12 @@ public class EnemyAI : Actor
 {
     [SerializeField] private PieceCounterPanel pieceCounterPanel = null;
     [SerializeField] private bool printBestScore = false;
-    [SerializeField, Min(0)] float flagAtRiskMultiplier = 1000f;
-    [SerializeField, Min(0)] float opennessMultiplier = 2f;
-    [SerializeField, Min(0)] float aggressionMultiplier = 2f;
-    [SerializeField, Min(0)] float winningBattleBonus = 100f;
-    [SerializeField, Min(0)] float losingBattlePenalty = 50f;
+    [SerializeField, Min(0)] private float flagAtRiskMultiplier = 1000f;
+    [SerializeField, Min(0)] private float opennessMultiplier = 2f;
+    [SerializeField, Min(0)] private float aggressionMultiplier = 2f;
+    [SerializeField, Min(0)] private float winningBattleBonus = 100f;
+    [SerializeField, Min(0)] private float losingBattlePenalty = 50f;
+    [SerializeField, Min(1)] private int maxDepth = 3;
 
     private readonly Dictionary<int, RankPossibilities> enemyPieces =
         new Dictionary<int, RankPossibilities>();
@@ -122,71 +123,18 @@ public class EnemyAI : Actor
     private MoveInfo GetMove()
     {
         var allPossibleMoves = board.GetAllValidMoves();
-        float bestResult = -1000000f;
+        float bestResult = float.MinValue;
         int bestResultIndex = 0;
 
         // Explore each move
         for (int i = 0; i < allPossibleMoves.Count; i++)
         {
-            // Get the current move
-            MoveInfo curMove = allPossibleMoves[i];
-            float finalResult = 0f;
-
-            // If piece exists in next position, this is an attacking move
-            if (board.DoesPieceExistInPosition(curMove.NewPosition))
-            {
-                // Get needed vars
-                PieceInfo myPiece = board.GetPieceFromPosition(curMove.OldPosition);
-                PieceInfo otherPiece = board.GetPieceFromPosition(curMove.NewPosition);
-                PieceRank myRank = myPiece.Rank;
-                RankPossibilities otherRankPossibilities = enemyPieces[otherPiece.ID];
-
-                // Get win chance
-                float winChance = CalculateWinChance(otherRankPossibilities, myRank);
-
-                if (winChance >= 0.99f) // Guaranteed to win!
-                {
-                    Board boardCopy = board.GetCopyWithHiddenPieces(side);
-                    boardCopy.ForceMoveWin(curMove);
-
-                    // Calculate heuristic of first move
-                    float myWinResult = GetMyHeuristic(boardCopy) + winningBattleBonus;
-                    float otherWinResult = PerformCounterMove(boardCopy);
-                    float simulatedWinResult = myWinResult - otherWinResult;
-                    finalResult += simulatedWinResult;
-                }
-                else if (winChance <= 0.01f) // Guaranteed to lose!
-                {
-                    // Optimization: don't explore moves where guaranteed to lose!
-                    continue;
-                }
-                else
-                {
-                    // Simulate both outcomes and multiply each with it's chance
-                    // Simulated win
-                    Board boardCopy1 = board.GetCopyWithHiddenPieces(side);
-                    boardCopy1.ForceMoveWin(curMove);
-                    float myWinResult = GetMyHeuristic(boardCopy1) + winningBattleBonus;
-                    float otherWinResult = PerformCounterMove(boardCopy1);
-                    float simulatedWinResult = (myWinResult - otherWinResult) * winChance;
-                    finalResult += simulatedWinResult;
-
-                    // Simulated loss
-                    Board boardCopy2 = board.GetCopyWithHiddenPieces(side);
-                    boardCopy2.ForceMoveLose(curMove);
-                    float myLossResult = GetMyHeuristic(boardCopy2) - losingBattlePenalty;
-                    float otherLossResult = PerformCounterMove(boardCopy2);
-                    float simulatedLossResult = (myLossResult - otherLossResult) * (1f - winChance);
-                    finalResult += simulatedLossResult;
-                }
-            }
-            else
-            {
-                Board boardCopy = board.GetCopyWithHiddenPieces(side);
-                boardCopy.ForceMove(curMove);
-                finalResult += GetMyHeuristic(boardCopy);
-                finalResult += PerformCounterMove(boardCopy);
-            }
+            MoveInfo move = allPossibleMoves[i];
+            
+            float finalResult = EvaluateMove(
+                board.GetCopyWithHiddenPieces(side),
+                move,
+                maxDepth - 1);
 
             if (finalResult > bestResult)
             {
@@ -202,147 +150,192 @@ public class EnemyAI : Actor
         return allPossibleMoves[bestResultIndex];
     }
 
-    private float PerformCounterMove(Board boardCopy)
+    private float EvaluateMove(Board boardCopy, in MoveInfo move, int depth)
     {
-        // Other player's turn
-        boardCopy.ForceFlipSides();
+        float resultSum = 0f;
+        
+        // If piece exists in next position, this is an attacking move
+        if (boardCopy.DoesPieceExistInPosition(move.NewPosition))
+        {
+            // Get needed vars
+            PieceInfo oldPosPiece = boardCopy.GetPieceFromPosition(move.OldPosition);
+            PieceInfo newPosPiece = boardCopy.GetPieceFromPosition(move.NewPosition);
+            PieceInfo myPiece = boardCopy.CurrentSide == side ? oldPosPiece : newPosPiece;
+            PieceInfo otherPiece = boardCopy.CurrentSide == side ? newPosPiece : oldPosPiece;
+            PieceRank myRank = myPiece.Rank;
+            RankPossibilities otherRankPossibilities = enemyPieces[otherPiece.ID];
+
+            // Get win chance
+            float winChance = CalculateWinChance(otherRankPossibilities, myRank);
+            if (boardCopy.CurrentSide != side)
+                winChance = 1f - winChance; 
+
+            if (winChance >= 0.99f) // Guaranteed to win!
+            {
+                resultSum += SimulateWin(boardCopy, move, depth);
+            }
+            else if (winChance <= 0.01f) // Guaranteed to lose!
+            {
+                // Optimization: don't explore moves where guaranteed to lose!
+                return -losingBattlePenalty * 10f;
+            }
+            else // Simulate both outcomes and multiply each with it's chance
+            {
+                // Simulated win
+                resultSum += SimulateWin(boardCopy, move, depth) * winChance;
+
+                // Simulated loss
+                float lossChance = 1f - winChance;
+                resultSum += SimulateLoss(boardCopy, move, depth) * lossChance;
+            }
+        }
+        else
+        {
+            float myResult = SimulateNormal(boardCopy, move, depth);
+            resultSum += myResult;
+        }
+
+        return resultSum;
+    }
+
+    private float SimulateWin(Board boardCopy, in MoveInfo move, int depth)
+    {
+        Board newBoardCopy = boardCopy.GetCopyWithHiddenPieces(side);
+
+        // First turn
+        newBoardCopy.ForceMoveWin(move);
+        float myResult = GetHeuristic(newBoardCopy) + winningBattleBonus;
+
+        // Second turn
+        newBoardCopy.ForceFlipSides(); // Flip turns
+        float otherResult = MonteCarloSearch(newBoardCopy, depth - 1);
+
+        return myResult - otherResult;
+    }
+
+    private float SimulateLoss(Board boardCopy, MoveInfo move, int depth)
+    {
+        Board newBoardCopy = boardCopy.GetCopyWithHiddenPieces(side);
+
+        // First turn
+        newBoardCopy.ForceMoveLose(move);
+        float myResult = GetHeuristic(newBoardCopy) - losingBattlePenalty;
+
+        // Second turn
+        newBoardCopy.ForceFlipSides();
+        float otherResult = MonteCarloSearch(newBoardCopy, depth - 1);
+
+        return myResult - otherResult;
+    }
+
+    private float SimulateNormal(Board boardCopy, MoveInfo move, int depth)
+    {
+        Board newBoardCopy = boardCopy.GetCopyWithHiddenPieces(side);
+
+        // First turn
+        newBoardCopy.ForceMove(move);
+        float myResult = GetHeuristic(boardCopy);
+
+        // Second turn
+        newBoardCopy.ForceFlipSides();
+        float otherResult = MonteCarloSearch(newBoardCopy, depth - 1);
+
+        return myResult - otherResult;
+    }
+
+    private float MonteCarloSearch(Board boardCopy, int depth)
+    {
+        if (depth < 0)
+            return GetHeuristic(boardCopy);
+
+        float resultSum = 0f;
+        List<MoveInfo> moves = boardCopy.GetAllValidMoves();
 
         // Explore counter moves
-        float result2Sum = 0f;
-        List<MoveInfo> counterMoves = boardCopy.GetAllValidMoves();
-        for (int j = 0; j < counterMoves.Count; j++)
+        for (int j = 0; j < moves.Count; j++)
         {
-            MoveInfo otherMove = counterMoves[j];
-
-            // If piece exists in next position, this is an attacking move
-            if (boardCopy.DoesPieceExistInPosition(otherMove.NewPosition))
-            {
-                PieceInfo myPiece = boardCopy.GetPieceFromPosition(otherMove.NewPosition);
-                PieceInfo otherPiece = boardCopy.GetPieceFromPosition(otherMove.OldPosition);
-                PieceRank myRank = myPiece.Rank;
-                RankPossibilities otherRankPossibilities = enemyPieces[otherPiece.ID];
-
-                // Get win chance
-                float winChance = 1f - CalculateWinChance(otherRankPossibilities, myRank);
-
-                if (winChance >= 0.99f) // Guaranteed to win!
-                {
-                    Board boardCopy2 = boardCopy.GetCopyWithHiddenPieces(side);
-                    boardCopy2.ForceMoveWin(otherMove);
-                    result2Sum += winningBattleBonus;
-                    result2Sum += GetOtherHeuristic(boardCopy2);
-                }
-                else if (winChance <= 0.01f) // Guaranteed to lose!
-                {
-                    Board boardCopy2 = boardCopy.GetCopyWithHiddenPieces(side);
-                    boardCopy2.ForceMoveLose(otherMove);
-                    result2Sum -= losingBattlePenalty;
-                    result2Sum += GetOtherHeuristic(boardCopy2);
-                }
-                else
-                {
-                    // Simulated win
-                    Board boardCopyWin = boardCopy.GetCopyWithHiddenPieces(side);
-                    boardCopyWin.ForceMoveWin(otherMove);
-                    result2Sum += winningBattleBonus * winChance;
-                    result2Sum += GetOtherHeuristic(boardCopyWin) * winChance;
-
-                    // Simulated loss
-                    Board boardCopyLoss = boardCopy.GetCopyWithHiddenPieces(side);
-                    boardCopyLoss.ForceMoveLose(otherMove);
-                    result2Sum -= losingBattlePenalty * (1f - winChance);
-                    result2Sum += GetOtherHeuristic(boardCopyLoss) * (1f - winChance);
-                }
-            }
-            else
-            {
-                Board boardCopy2 = boardCopy.GetCopyWithHiddenPieces(side);
-                boardCopy2.ForceMove(otherMove);
-                result2Sum += GetOtherHeuristic(boardCopy2);
-            }
+            resultSum += EvaluateMove(boardCopy, moves[j], depth);
         }
 
         // return average
-        return result2Sum / counterMoves.Count;
+        return resultSum / moves.Count;
     }
 
-    private float GetMyHeuristic(Board boardCopy)
+    private float GetHeuristic(Board boardCopy)
     {
         float score = 0;
 
-        // Openness - Calculate score for how many moves you can do
-        List<MoveInfo> allValidMoves = boardCopy.GetAllValidMoves();
-        int allValidMovesCount = allValidMoves.Count;
-        score += allValidMovesCount * opennessMultiplier;
-
-        // Check if flag is at risk
-        PieceInfo myFlag = myPieces.Flag;
-        BoardPosition myFlagPos = myFlag.BoardPosition;
-        PieceInfo upPiece = boardCopy.GetPieceFromPosition(myFlagPos.Up);
-        PieceInfo downPiece = boardCopy.GetPieceFromPosition(myFlagPos.Down);
-        PieceInfo leftPiece = boardCopy.GetPieceFromPosition(myFlagPos.Left);
-        PieceInfo rightPiece = boardCopy.GetPieceFromPosition(myFlagPos.Right);
-        if (upPiece != null && upPiece.Side != side)
-            score -= flagAtRiskMultiplier;
-        if (downPiece != null && downPiece.Side != side)
-            score -= flagAtRiskMultiplier;
-        if (leftPiece != null && leftPiece.Side != side)
-            score -= flagAtRiskMultiplier;
-        if (rightPiece != null && rightPiece.Side != side)
-            score -= flagAtRiskMultiplier;
-
-        // Aggressiveness - Calculate score of each battle
-        for (int i = 0; i < allValidMovesCount; i++)
+        if (boardCopy.CurrentSide == side)
         {
-            MoveInfo move = allValidMoves[i];
+            // Openness - Calculate score for how many moves you can do
+            List<MoveInfo> allValidMoves = boardCopy.GetAllValidMoves();
+            int allValidMovesCount = allValidMoves.Count;
+            score += allValidMovesCount * opennessMultiplier;
 
-            // If piece exists in new position, it is an attack
-            if (!boardCopy.DoesPieceExistInPosition(move.NewPosition))
-                continue;
+            // Check if flag is at risk
+            PieceInfo myFlag = myPieces.Flag;
+            BoardPosition myFlagPos = myFlag.BoardPosition;
+            PieceInfo upPiece = boardCopy.GetPieceFromPosition(myFlagPos.Up);
+            PieceInfo downPiece = boardCopy.GetPieceFromPosition(myFlagPos.Down);
+            PieceInfo leftPiece = boardCopy.GetPieceFromPosition(myFlagPos.Left);
+            PieceInfo rightPiece = boardCopy.GetPieceFromPosition(myFlagPos.Right);
+            if (upPiece != null && upPiece.Side != side)
+                score -= flagAtRiskMultiplier;
+            if (downPiece != null && downPiece.Side != side)
+                score -= flagAtRiskMultiplier;
+            if (leftPiece != null && leftPiece.Side != side)
+                score -= flagAtRiskMultiplier;
+            if (rightPiece != null && rightPiece.Side != side)
+                score -= flagAtRiskMultiplier;
 
-            PieceInfo myPiece = boardCopy.GetPieceFromPosition(move.OldPosition);
-            PieceInfo otherPiece = boardCopy.GetPieceFromPosition(move.NewPosition);
-            PieceRank myRank = myPiece.Rank;
-            RankPossibilities otherRankPossibilities = enemyPieces[otherPiece.ID];
+            // Aggressiveness - Calculate score of each battle
+            for (int i = 0; i < allValidMovesCount; i++)
+            {
+                MoveInfo move = allValidMoves[i];
 
-            float winChance = CalculateWinChance(otherRankPossibilities, myRank);
-            winChance = (winChance * 2f) - 1; // 0..1 to -1..1
+                // If piece exists in new position, it is an attack
+                if (!boardCopy.DoesPieceExistInPosition(move.NewPosition))
+                    continue;
 
-            score += winChance * aggressionMultiplier;
+                PieceInfo myPiece = boardCopy.GetPieceFromPosition(move.OldPosition);
+                PieceInfo otherPiece = boardCopy.GetPieceFromPosition(move.NewPosition);
+                PieceRank myRank = myPiece.Rank;
+                RankPossibilities otherRankPossibilities = enemyPieces[otherPiece.ID];
+
+                float winChance = CalculateWinChance(otherRankPossibilities, myRank);
+                winChance = (winChance * 2f) - 1; // 0..1 to -1..1
+
+                score += winChance * aggressionMultiplier;
+            }
         }
-
-        return score;
-    }
-
-    private float GetOtherHeuristic(Board boardCopy)
-    {
-        float score = 0;
-
-        // Openness - Calculate score for how many moves you can do
-        List<MoveInfo> allValidMoves = boardCopy.GetAllValidMoves();
-        int allValidMovesCount = allValidMoves.Count;
-        score += allValidMovesCount * opennessMultiplier;
-
-        // Aggressiveness - Calculate score of each battle
-        for (int i = 0; i < allValidMovesCount; i++)
+        else
         {
-            MoveInfo move = allValidMoves[i];
+            // Openness - Calculate score for how many moves you can do
+            List<MoveInfo> allValidMoves = boardCopy.GetAllValidMoves();
+            int allValidMovesCount = allValidMoves.Count;
+            score += allValidMovesCount * opennessMultiplier;
 
-            // If piece exists in new position, it is an attack
-            if (!boardCopy.DoesPieceExistInPosition(move.NewPosition))
-                continue;
+            // Aggressiveness - Calculate score of each battle
+            for (int i = 0; i < allValidMovesCount; i++)
+            {
+                MoveInfo move = allValidMoves[i];
 
-            PieceInfo myPiece = boardCopy.GetPieceFromPosition(move.NewPosition);
-            PieceInfo otherPiece = boardCopy.GetPieceFromPosition(move.OldPosition);
-            PieceRank myRank = myPiece.Rank;
-            RankPossibilities otherRankPossibilities = enemyPieces[otherPiece.ID];
+                // If piece exists in new position, it is an attack
+                if (!boardCopy.DoesPieceExistInPosition(move.NewPosition))
+                    continue;
 
-            float winChance = CalculateWinChance(otherRankPossibilities, myRank);
-            winChance = (winChance * 2f) - 1; // 0..1 to -1..1
+                PieceInfo myPiece = boardCopy.GetPieceFromPosition(move.NewPosition);
+                PieceInfo otherPiece = boardCopy.GetPieceFromPosition(move.OldPosition);
+                PieceRank myRank = myPiece.Rank;
+                RankPossibilities otherRankPossibilities = enemyPieces[otherPiece.ID];
 
-            score += winChance * aggressionMultiplier;
+                float winChance = CalculateWinChance(otherRankPossibilities, myRank);
+                winChance = (winChance * 2f) - 1; // 0..1 to -1..1
+
+                score += winChance * aggressionMultiplier;
+            }
         }
-
+        
         return score;
     }
 

@@ -8263,6 +8263,7 @@ MonoBehaviour:
   aggressionMultiplier: 25
   winningBattleBonus: 250
   losingBattlePenalty: 200
+  maxDepth: 3
 --- !u!1001 &2108292936
 PrefabInstance:
   m_ObjectHideFlags: 0
