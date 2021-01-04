@@ -9,6 +9,7 @@ public class EnemyAI : Actor
     [SerializeField, Min(0)] private float flagAtRiskMultiplier = 1000f;
     [SerializeField, Min(0)] private float opennessMultiplier = 2f;
     [SerializeField, Min(0)] private float aggressionMultiplier = 2f;
+    [SerializeField, Min(0)] private float forwardBonus = 10f;
     [SerializeField, Min(0)] private float winningBattleBonus = 100f;
     [SerializeField, Min(0)] private float losingBattlePenalty = 50f;
     [SerializeField, Min(1)] private int maxDepth = 3;
@@ -150,10 +151,21 @@ public class EnemyAI : Actor
         return allPossibleMoves[bestResultIndex];
     }
 
-    private float EvaluateMove(Board boardCopy, in MoveInfo move, int depth)
+    private float EvaluateMove(Board boardCopy, MoveInfo move, int depth)
     {
         float resultSum = 0f;
-        
+
+        if (side == Side.A)
+        {
+            if (move.GetDifference().y > 0)
+                resultSum += forwardBonus;
+        }
+        else
+        {
+            if (move.GetDifference().y < 0)
+                resultSum += forwardBonus;
+        }
+
         // If piece exists in next position, this is an attacking move
         if (boardCopy.DoesPieceExistInPosition(move.NewPosition))
         {

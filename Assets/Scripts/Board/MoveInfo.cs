@@ -8,4 +8,11 @@
         OldPosition = piece.BoardPosition;
         NewPosition = newPosition;
     }
+
+    public BoardPosition GetDifference()
+    {
+        return new BoardPosition(
+            NewPosition.x - OldPosition.x, 
+            NewPosition.y - OldPosition.y);
+    }
 }
