@@ -54,6 +54,7 @@ public class PieceContainer : IEnumerable<PieceInfo>, IDeepCopyable<PieceContain
     {
         PieceContainer newPieceContainer = DeepCopy();
 
+        // Invalidate all pieces
         foreach (PieceInfo pieceInfo in newPieceContainer)
             pieceInfo.Rank = PieceRank.Invalid;
 
